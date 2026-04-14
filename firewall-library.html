@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firewall Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="firewall-library.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Firewall Library</p>
+        <h1>Firewall Atlas</h1>
+        <p class="lede">A visual map of all trigram application folders, their sources, destinations, and allow or deny rule flows.</p>
+      </div>
+      <div class="hero-stats" id="hero-stats"></div>
+    </header>
+
+    <main class="layout">
+      <section class="card side-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Explore</p>
+            <h2>Applications</h2>
+          </div>
+        </div>
+        <div class="controls">
+          <input id="trigram-search" class="search" type="search" list="trigram-options" placeholder="Search or choose trigram">
+          <datalist id="trigram-options"></datalist>
+          <div class="chips">
+            <button class="chip is-active" data-filter-group="action" data-filter-value="all">All</button>
+            <button class="chip" data-filter-group="action" data-filter-value="allow">Allow</button>
+            <button class="chip" data-filter-group="action" data-filter-value="deny">Deny</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card graph-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Graph</p>
+            <h2>Connected Rule Topology</h2>
+          </div>
+        </div>
+        <div id="atlas-graph" class="atlas-graph"></div>
+        <div id="graph-tooltip" class="graph-tooltip" hidden></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="data/firewall-library.js"></script>
+  <script src="firewall-library.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+application:
+  trigram: BUS
+  name: Business Portal
+  tier: web
+firewall:
+  policy_set: bus-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: BUS_internet
+      destination: BUS_portal-frontends
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 80
+        - 443
+      action: allow
+      priority: 170
+      enabled: true
+    - name: allow-ops
+      source: BUS_dev-vpn
+      destination: BUS_portal-frontends
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 171
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: BUS_portal-frontends
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 172
+      enabled: true
+    - name: allow-egress-service
+      source: BUS_portal-frontends
+      destination: BUS_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 173
+      enabled: true
+    - name: allow-sync
+      source: BUS_integration-bus
+      destination: BUS_portal-frontends
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 174
+      enabled: true
+    - name: allow-trigram-peer
+      source: BKP_backup-control
+      destination: BUS_business-portal
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 175
+      enabled: true
+    - name: allow-outbound-trigram
+      source: BUS_business-portal
+      destination: BKP_backup-control
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 176
+      enabled: true
+    - name: deny-trigram-peer
+      source: LST_listing-api
+      destination: BUS_business-portal
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 177
+      enabled: true
+    - name: deny-outbound-trigram
+      source: BUS_business-portal
+      destination: LST_listing-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 178
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: BUS_portal-frontends
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 179
+      enabled: true

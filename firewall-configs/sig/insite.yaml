@@ -1,0 +1,110 @@
+application:
+  trigram: SIG
+  name: Signing Service
+  tier: security
+firewall:
+  policy_set: sig-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SIG_app-tier
+      destination: SIG_signing-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 1080
+      enabled: true
+    - name: allow-ops
+      source: SIG_corp-admin
+      destination: SIG_signing-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1081
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SIG_signing-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 1082
+      enabled: true
+    - name: allow-egress-service
+      source: SIG_signing-service
+      destination: SIG_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 1083
+      enabled: true
+    - name: allow-sync
+      source: SIG_integration-bus
+      destination: SIG_signing-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 1084
+      enabled: true
+    - name: allow-trigram-peer
+      source: SOC_soc-console
+      destination: SIG_signing-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 1085
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SIG_signing-service
+      destination: SOC_soc-console
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 1086
+      enabled: true
+    - name: deny-trigram-peer
+      source: IOT_iot-hub
+      destination: SIG_signing-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 1087
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SIG_signing-service
+      destination: IOT_iot-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 1088
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SIG_signing-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 1089
+      enabled: true

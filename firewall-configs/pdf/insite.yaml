@@ -1,0 +1,110 @@
+application:
+  trigram: PDF
+  name: PDF Renderer
+  tier: app
+firewall:
+  policy_set: pdf-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: PDF_app-tier
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8081
+      action: allow
+      priority: 850
+      enabled: true
+    - name: allow-ops
+      source: PDF_ops-admin
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 851
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 852
+      enabled: true
+    - name: allow-egress-service
+      source: PDF_pdf-renderer
+      destination: PDF_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 853
+      enabled: true
+    - name: allow-sync
+      source: PDF_integration-bus
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: udp
+      ports:
+        - 5060
+      action: allow
+      priority: 854
+      enabled: true
+    - name: allow-trigram-peer
+      source: PAY_payments
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 855
+      enabled: true
+    - name: allow-outbound-trigram
+      source: PDF_pdf-renderer
+      destination: PAY_payments
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 856
+      enabled: true
+    - name: deny-trigram-peer
+      source: ELK_observability-stack
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 857
+      enabled: true
+    - name: deny-outbound-trigram
+      source: PDF_pdf-renderer
+      destination: ELK_observability-stack
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 858
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: PDF_pdf-renderer
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 859
+      enabled: true

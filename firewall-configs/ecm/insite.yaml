@@ -1,0 +1,110 @@
+application:
+  trigram: ECM
+  name: Commerce Engine
+  tier: web
+firewall:
+  policy_set: ecm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ECM_internet
+      destination: ECM_commerce-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 330
+      enabled: true
+    - name: allow-ops
+      source: ECM_corp-admin
+      destination: ECM_commerce-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 331
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ECM_commerce-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 332
+      enabled: true
+    - name: allow-egress-service
+      source: ECM_commerce-web
+      destination: ECM_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 333
+      enabled: true
+    - name: allow-sync
+      source: ECM_integration-bus
+      destination: ECM_commerce-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 334
+      enabled: true
+    - name: allow-trigram-peer
+      source: EAI_enterprise-integration
+      destination: ECM_commerce-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 335
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ECM_commerce-engine
+      destination: EAI_enterprise-integration
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 336
+      enabled: true
+    - name: deny-trigram-peer
+      source: ORC_orchestration
+      destination: ECM_commerce-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 337
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ECM_commerce-engine
+      destination: ORC_orchestration
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 338
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ECM_commerce-web
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 339
+      enabled: true

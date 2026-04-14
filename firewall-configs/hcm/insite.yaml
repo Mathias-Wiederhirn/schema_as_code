@@ -1,0 +1,110 @@
+application:
+  trigram: HCM
+  name: Human Capital
+  tier: corp
+firewall:
+  policy_set: hcm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: HCM_corp-users
+      destination: HCM_hcm-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 1521
+      action: allow
+      priority: 490
+      enabled: true
+    - name: allow-ops
+      source: HCM_ops-admin
+      destination: HCM_hcm-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 491
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: HCM_hcm-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 492
+      enabled: true
+    - name: allow-egress-service
+      source: HCM_hcm-suite
+      destination: HCM_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 493
+      enabled: true
+    - name: allow-sync
+      source: HCM_corp-services
+      destination: HCM_hcm-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 494
+      enabled: true
+    - name: allow-trigram-peer
+      source: GRF_graph-service
+      destination: HCM_human-capital
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 495
+      enabled: true
+    - name: allow-outbound-trigram
+      source: HCM_human-capital
+      destination: GRF_graph-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 496
+      enabled: true
+    - name: deny-trigram-peer
+      source: RIS_risk-engine
+      destination: HCM_human-capital
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 497
+      enabled: true
+    - name: deny-outbound-trigram
+      source: HCM_human-capital
+      destination: RIS_risk-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 498
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: HCM_hcm-suite
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 499
+      enabled: true

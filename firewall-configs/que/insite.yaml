@@ -1,0 +1,110 @@
+application:
+  trigram: QUE
+  name: Queue Adapter
+  tier: integration
+firewall:
+  policy_set: que-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: QUE_app-tier
+      destination: QUE_queue-adapter
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5672
+      action: allow
+      priority: 940
+      enabled: true
+    - name: allow-ops
+      source: QUE_ops-admin
+      destination: QUE_queue-adapter
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 941
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: QUE_queue-adapter
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 942
+      enabled: true
+    - name: allow-egress-service
+      source: QUE_queue-adapter
+      destination: QUE_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 943
+      enabled: true
+    - name: allow-sync
+      source: QUE_integration-bus
+      destination: QUE_queue-adapter
+      direction: egress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 944
+      enabled: true
+    - name: allow-trigram-peer
+      source: RAB_rabbit-cluster
+      destination: QUE_queue-adapter
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 945
+      enabled: true
+    - name: allow-outbound-trigram
+      source: QUE_queue-adapter
+      destination: RAB_rabbit-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 946
+      enabled: true
+    - name: deny-trigram-peer
+      source: FRA_fraud-engine
+      destination: QUE_queue-adapter
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 947
+      enabled: true
+    - name: deny-outbound-trigram
+      source: QUE_queue-adapter
+      destination: FRA_fraud-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 948
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: QUE_queue-adapter
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 949
+      enabled: true

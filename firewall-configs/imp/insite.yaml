@@ -1,0 +1,110 @@
+application:
+  trigram: IMP
+  name: Import Pipeline
+  tier: batch
+firewall:
+  policy_set: imp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: IMP_partners
+      destination: IMP_import-workers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 22
+      action: allow
+      priority: 550
+      enabled: true
+    - name: allow-ops
+      source: IMP_ops-admin
+      destination: IMP_import-workers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 551
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: IMP_import-workers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 552
+      enabled: true
+    - name: allow-egress-service
+      source: IMP_import-workers
+      destination: IMP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 553
+      enabled: true
+    - name: allow-sync
+      source: IMP_integration-bus
+      destination: IMP_import-workers
+      direction: ingress
+      protocol: udp
+      ports:
+        - 8200
+      action: allow
+      priority: 554
+      enabled: true
+    - name: allow-trigram-peer
+      source: IMG_image-service
+      destination: IMP_import-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 555
+      enabled: true
+    - name: allow-outbound-trigram
+      source: IMP_import-pipeline
+      destination: IMG_image-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 556
+      enabled: true
+    - name: deny-trigram-peer
+      source: SEC_security-hub
+      destination: IMP_import-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 557
+      enabled: true
+    - name: deny-outbound-trigram
+      source: IMP_import-pipeline
+      destination: SEC_security-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 558
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: IMP_import-workers
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 559
+      enabled: true

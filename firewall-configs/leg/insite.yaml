@@ -1,0 +1,110 @@
+application:
+  trigram: LEG
+  name: Legacy Bridge
+  tier: integration
+firewall:
+  policy_set: leg-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: LEG_app-tier
+      destination: LEG_legacy-bridge
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 1521
+      action: allow
+      priority: 640
+      enabled: true
+    - name: allow-ops
+      source: LEG_ops-admin
+      destination: LEG_legacy-bridge
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 641
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: LEG_legacy-bridge
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 642
+      enabled: true
+    - name: allow-egress-service
+      source: LEG_legacy-bridge
+      destination: LEG_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 643
+      enabled: true
+    - name: allow-sync
+      source: LEG_integration-bus
+      destination: LEG_legacy-bridge
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 644
+      enabled: true
+    - name: allow-trigram-peer
+      source: LOG_log-collector
+      destination: LEG_legacy-bridge
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 645
+      enabled: true
+    - name: allow-outbound-trigram
+      source: LEG_legacy-bridge
+      destination: LOG_log-collector
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 646
+      enabled: true
+    - name: deny-trigram-peer
+      source: AUD_audit-platform
+      destination: LEG_legacy-bridge
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 647
+      enabled: true
+    - name: deny-outbound-trigram
+      source: LEG_legacy-bridge
+      destination: AUD_audit-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 648
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: LEG_legacy-bridge
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 649
+      enabled: true

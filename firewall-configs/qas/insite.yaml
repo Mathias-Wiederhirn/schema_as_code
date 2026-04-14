@@ -1,0 +1,110 @@
+application:
+  trigram: QAS
+  name: QA Services
+  tier: qa
+firewall:
+  policy_set: qas-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: QAS_qa-lab
+      destination: QAS_qa-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 920
+      enabled: true
+    - name: allow-ops
+      source: QAS_dev-vpn
+      destination: QAS_qa-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 921
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: QAS_qa-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 922
+      enabled: true
+    - name: allow-egress-service
+      source: QAS_qa-services
+      destination: QAS_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 923
+      enabled: true
+    - name: allow-sync
+      source: QAS_integration-bus
+      destination: QAS_qa-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 924
+      enabled: true
+    - name: allow-trigram-peer
+      source: QRY_query-engine
+      destination: QAS_qa-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 925
+      enabled: true
+    - name: allow-outbound-trigram
+      source: QAS_qa-services
+      destination: QRY_query-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 926
+      enabled: true
+    - name: deny-trigram-peer
+      source: FIL_file-transfer
+      destination: QAS_qa-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 927
+      enabled: true
+    - name: deny-outbound-trigram
+      source: QAS_qa-services
+      destination: FIL_file-transfer
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 928
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: QAS_qa-services
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 929
+      enabled: true

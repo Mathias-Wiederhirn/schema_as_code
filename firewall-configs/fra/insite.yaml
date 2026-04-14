@@ -1,0 +1,110 @@
+application:
+  trigram: FRA
+  name: Fraud Engine
+  tier: security
+firewall:
+  policy_set: fra-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: FRA_payment-tier
+      destination: FRA_fraud-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 440
+      enabled: true
+    - name: allow-ops
+      source: FRA_dev-vpn
+      destination: FRA_fraud-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 441
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: FRA_fraud-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 442
+      enabled: true
+    - name: allow-egress-service
+      source: FRA_fraud-core
+      destination: FRA_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 443
+      enabled: true
+    - name: allow-sync
+      source: FRA_integration-bus
+      destination: FRA_fraud-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 444
+      enabled: true
+    - name: allow-trigram-peer
+      source: GAT_gateway-mesh
+      destination: FRA_fraud-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 445
+      enabled: true
+    - name: allow-outbound-trigram
+      source: FRA_fraud-engine
+      destination: GAT_gateway-mesh
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 446
+      enabled: true
+    - name: deny-trigram-peer
+      source: QUE_queue-adapter
+      destination: FRA_fraud-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 447
+      enabled: true
+    - name: deny-outbound-trigram
+      source: FRA_fraud-engine
+      destination: QUE_queue-adapter
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 448
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: FRA_fraud-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 449
+      enabled: true

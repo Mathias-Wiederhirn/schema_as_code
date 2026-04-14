@@ -1,0 +1,110 @@
+application:
+  trigram: RAB
+  name: Rabbit Cluster
+  tier: messaging
+firewall:
+  policy_set: rab-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: RAB_app-tier
+      destination: RAB_rabbit-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+        - 15672
+      action: allow
+      priority: 950
+      enabled: true
+    - name: allow-ops
+      source: RAB_dev-vpn
+      destination: RAB_rabbit-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 951
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: RAB_rabbit-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 952
+      enabled: true
+    - name: allow-egress-service
+      source: RAB_rabbit-brokers
+      destination: RAB_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 953
+      enabled: true
+    - name: allow-sync
+      source: RAB_message-backbone
+      destination: RAB_rabbit-brokers
+      direction: ingress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 954
+      enabled: true
+    - name: allow-trigram-peer
+      source: QUE_queue-adapter
+      destination: RAB_rabbit-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 955
+      enabled: true
+    - name: allow-outbound-trigram
+      source: RAB_rabbit-cluster
+      destination: QUE_queue-adapter
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 956
+      enabled: true
+    - name: deny-trigram-peer
+      source: GAT_gateway-mesh
+      destination: RAB_rabbit-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 957
+      enabled: true
+    - name: deny-outbound-trigram
+      source: RAB_rabbit-cluster
+      destination: GAT_gateway-mesh
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 958
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: RAB_rabbit-brokers
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 959
+      enabled: true

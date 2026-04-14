@@ -1,0 +1,110 @@
+application:
+  trigram: EXP
+  name: Export Service
+  tier: batch
+firewall:
+  policy_set: exp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: EXP_ops-admin
+      destination: EXP_export-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 22
+      action: allow
+      priority: 400
+      enabled: true
+    - name: allow-ops
+      source: EXP_ops-admin
+      destination: EXP_export-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 401
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: EXP_export-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 402
+      enabled: true
+    - name: allow-egress-service
+      source: EXP_export-runners
+      destination: EXP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 403
+      enabled: true
+    - name: allow-sync
+      source: EXP_integration-bus
+      destination: EXP_export-runners
+      direction: egress
+      protocol: udp
+      ports:
+        - 8443
+      action: allow
+      priority: 404
+      enabled: true
+    - name: allow-trigram-peer
+      source: FED_federation-hub
+      destination: EXP_export-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 405
+      enabled: true
+    - name: allow-outbound-trigram
+      source: EXP_export-service
+      destination: FED_federation-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 406
+      enabled: true
+    - name: deny-trigram-peer
+      source: PRD_product-api
+      destination: EXP_export-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 407
+      enabled: true
+    - name: deny-outbound-trigram
+      source: EXP_export-service
+      destination: PRD_product-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 408
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: EXP_export-runners
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 409
+      enabled: true

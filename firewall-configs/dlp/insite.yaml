@@ -1,0 +1,110 @@
+application:
+  trigram: DLP
+  name: Data Loss Prevention
+  tier: security
+firewall:
+  policy_set: dlp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: DLP_corp-egress
+      destination: DLP_dlp-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 6514
+      action: allow
+      priority: 290
+      enabled: true
+    - name: allow-ops
+      source: DLP_dev-vpn
+      destination: DLP_dlp-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 291
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: DLP_dlp-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 292
+      enabled: true
+    - name: allow-egress-service
+      source: DLP_dlp-cluster
+      destination: DLP_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 293
+      enabled: true
+    - name: allow-sync
+      source: DLP_integration-bus
+      destination: DLP_dlp-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 294
+      enabled: true
+    - name: allow-trigram-peer
+      source: DBA_database-admin
+      destination: DLP_data-loss-prevention
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 295
+      enabled: true
+    - name: allow-outbound-trigram
+      source: DLP_data-loss-prevention
+      destination: DBA_database-admin
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 296
+      enabled: true
+    - name: deny-trigram-peer
+      source: NTP_time-service
+      destination: DLP_data-loss-prevention
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 297
+      enabled: true
+    - name: deny-outbound-trigram
+      source: DLP_data-loss-prevention
+      destination: NTP_time-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 298
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: DLP_dlp-cluster
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 299
+      enabled: true

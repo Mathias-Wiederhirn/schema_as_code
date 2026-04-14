@@ -1,0 +1,110 @@
+application:
+  trigram: KEY
+  name: Key Vault
+  tier: security
+firewall:
+  policy_set: key-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: KEY_app-tier
+      destination: KEY_key-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8200
+      action: allow
+      priority: 600
+      enabled: true
+    - name: allow-ops
+      source: KEY_corp-admin
+      destination: KEY_key-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 601
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: KEY_key-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 602
+      enabled: true
+    - name: allow-egress-service
+      source: KEY_key-vault
+      destination: KEY_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 603
+      enabled: true
+    - name: allow-sync
+      source: KEY_integration-bus
+      destination: KEY_key-vault
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 604
+      enabled: true
+    - name: allow-trigram-peer
+      source: KUB_kubernetes-api
+      destination: KEY_key-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 605
+      enabled: true
+    - name: allow-outbound-trigram
+      source: KEY_key-vault
+      destination: KUB_kubernetes-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 606
+      enabled: true
+    - name: deny-trigram-peer
+      source: ACM_access-management
+      destination: KEY_key-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 607
+      enabled: true
+    - name: deny-outbound-trigram
+      source: KEY_key-vault
+      destination: ACM_access-management
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 608
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: KEY_key-vault
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 609
+      enabled: true

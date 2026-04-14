@@ -1,0 +1,109 @@
+application:
+  trigram: DNS
+  name: DNS Resolver
+  tier: core
+firewall:
+  policy_set: dns-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: DNS_all-zones
+      destination: DNS_resolver-pool
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 300
+      enabled: true
+    - name: allow-ops
+      source: DNS_corp-admin
+      destination: DNS_resolver-pool
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 301
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: DNS_resolver-pool
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 302
+      enabled: true
+    - name: allow-egress-service
+      source: DNS_resolver-pool
+      destination: DNS_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 303
+      enabled: true
+    - name: allow-sync
+      source: DNS_integration-bus
+      destination: DNS_resolver-pool
+      direction: egress
+      protocol: udp
+      ports:
+        - 1521
+      action: allow
+      priority: 304
+      enabled: true
+    - name: allow-trigram-peer
+      source: DOC_document-service
+      destination: DNS_dns-resolver
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 305
+      enabled: true
+    - name: allow-outbound-trigram
+      source: DNS_dns-resolver
+      destination: DOC_document-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 306
+      enabled: true
+    - name: deny-trigram-peer
+      source: OBS_observability
+      destination: DNS_dns-resolver
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 307
+      enabled: true
+    - name: deny-outbound-trigram
+      source: DNS_dns-resolver
+      destination: OBS_observability
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 308
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: DNS_resolver-pool
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 309
+      enabled: true

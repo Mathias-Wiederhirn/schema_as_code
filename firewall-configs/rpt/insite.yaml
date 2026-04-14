@@ -1,0 +1,110 @@
+application:
+  trigram: RPT
+  name: Report Builder
+  tier: analytics
+firewall:
+  policy_set: rpt-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: RPT_corp-users
+      destination: RPT_report-builder
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 1000
+      enabled: true
+    - name: allow-ops
+      source: RPT_ops-admin
+      destination: RPT_report-builder
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1001
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: RPT_report-builder
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 1002
+      enabled: true
+    - name: allow-egress-service
+      source: RPT_report-builder
+      destination: RPT_lakehouse-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 1003
+      enabled: true
+    - name: allow-sync
+      source: RPT_integration-bus
+      destination: RPT_report-builder
+      direction: egress
+      protocol: udp
+      ports:
+        - 1521
+      action: allow
+      priority: 1004
+      enabled: true
+    - name: allow-trigram-peer
+      source: SAP_sap-gateway
+      destination: RPT_report-builder
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 1005
+      enabled: true
+    - name: allow-outbound-trigram
+      source: RPT_report-builder
+      destination: SAP_sap-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 1006
+      enabled: true
+    - name: deny-trigram-peer
+      source: HLP_helpdesk
+      destination: RPT_report-builder
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 1007
+      enabled: true
+    - name: deny-outbound-trigram
+      source: RPT_report-builder
+      destination: HLP_helpdesk
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 1008
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: RPT_report-builder
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 1009
+      enabled: true

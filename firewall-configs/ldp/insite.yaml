@@ -1,0 +1,110 @@
+application:
+  trigram: LDP
+  name: LDAP Service
+  tier: identity
+firewall:
+  policy_set: ldp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: LDP_corp-users
+      destination: LDP_ldap-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 389
+        - 636
+      action: allow
+      priority: 630
+      enabled: true
+    - name: allow-ops
+      source: LDP_corp-admin
+      destination: LDP_ldap-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 631
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: LDP_ldap-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 632
+      enabled: true
+    - name: allow-egress-service
+      source: LDP_ldap-cluster
+      destination: LDP_directory-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 633
+      enabled: true
+    - name: allow-sync
+      source: LDP_integration-bus
+      destination: LDP_ldap-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 634
+      enabled: true
+    - name: allow-trigram-peer
+      source: LAB_lab-platform
+      destination: LDP_ldap-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 635
+      enabled: true
+    - name: allow-outbound-trigram
+      source: LDP_ldap-service
+      destination: LAB_lab-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 636
+      enabled: true
+    - name: deny-trigram-peer
+      source: ATH_auth-service
+      destination: LDP_ldap-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 637
+      enabled: true
+    - name: deny-outbound-trigram
+      source: LDP_ldap-service
+      destination: ATH_auth-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 638
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: LDP_ldap-cluster
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 639
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: ATH
+  name: Auth Service
+  tier: identity
+firewall:
+  policy_set: ath-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ATH_app-tier
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 130
+      enabled: true
+    - name: allow-ops
+      source: ATH_ops-admin
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 131
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 132
+      enabled: true
+    - name: allow-egress-service
+      source: ATH_auth-service
+      destination: ATH_directory-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 133
+      enabled: true
+    - name: allow-sync
+      source: ATH_integration-bus
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 134
+      enabled: true
+    - name: allow-trigram-peer
+      source: APP_application-core
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 135
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ATH_auth-service
+      destination: APP_application-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 136
+      enabled: true
+    - name: deny-trigram-peer
+      source: LDP_ldap-service
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 137
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ATH_auth-service
+      destination: LDP_ldap-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 138
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ATH_auth-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 139
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: CTL
+  name: Control Plane
+  tier: platform
+firewall:
+  policy_set: ctl-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CTL_ops-admin
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 6443
+      action: allow
+      priority: 250
+      enabled: true
+    - name: allow-ops
+      source: CTL_ops-admin
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 251
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 252
+      enabled: true
+    - name: allow-egress-service
+      source: CTL_control-plane
+      destination: CTL_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 253
+      enabled: true
+    - name: allow-sync
+      source: CTL_control-plane
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 254
+      enabled: true
+    - name: allow-trigram-peer
+      source: CSH_cash-ledger
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 255
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CTL_control-plane
+      destination: CSH_cash-ledger
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 256
+      enabled: true
+    - name: deny-trigram-peer
+      source: MON_monitoring-suite
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 257
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CTL_control-plane
+      destination: MON_monitoring-suite
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 258
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CTL_control-plane
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 259
+      enabled: true

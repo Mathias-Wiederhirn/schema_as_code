@@ -1,0 +1,110 @@
+application:
+  trigram: MDM
+  name: Master Data
+  tier: data
+firewall:
+  policy_set: mdm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MDM_corp-users
+      destination: MDM_mdm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 1521
+      action: allow
+      priority: 690
+      enabled: true
+    - name: allow-ops
+      source: MDM_corp-admin
+      destination: MDM_mdm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 691
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MDM_mdm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 692
+      enabled: true
+    - name: allow-egress-service
+      source: MDM_mdm-core
+      destination: MDM_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 693
+      enabled: true
+    - name: allow-sync
+      source: MDM_integration-bus
+      destination: MDM_mdm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 694
+      enabled: true
+    - name: allow-trigram-peer
+      source: MAI_mail-api
+      destination: MDM_master-data
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 695
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MDM_master-data
+      destination: MAI_mail-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 696
+      enabled: true
+    - name: deny-trigram-peer
+      source: CAS_case-tracking
+      destination: MDM_master-data
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 697
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MDM_master-data
+      destination: CAS_case-tracking
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 698
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MDM_mdm-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 699
+      enabled: true

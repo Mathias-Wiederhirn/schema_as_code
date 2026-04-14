@@ -1,0 +1,110 @@
+application:
+  trigram: API
+  name: Public API
+  tier: edge
+firewall:
+  policy_set: api-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: API_internet
+      destination: API_api-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 110
+      enabled: true
+    - name: allow-ops
+      source: API_dev-vpn
+      destination: API_api-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 111
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: API_api-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 112
+      enabled: true
+    - name: allow-egress-service
+      source: API_api-gateway
+      destination: API_origin-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 113
+      enabled: true
+    - name: allow-sync
+      source: API_integration-bus
+      destination: API_api-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 114
+      enabled: true
+    - name: allow-trigram-peer
+      source: ACM_access-management
+      destination: API_public-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 115
+      enabled: true
+    - name: allow-outbound-trigram
+      source: API_public-api
+      destination: ACM_access-management
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 116
+      enabled: true
+    - name: deny-trigram-peer
+      source: KUB_kubernetes-api
+      destination: API_public-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 117
+      enabled: true
+    - name: deny-outbound-trigram
+      source: API_public-api
+      destination: KUB_kubernetes-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 118
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: API_api-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 119
+      enabled: true

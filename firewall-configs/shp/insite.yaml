@@ -1,0 +1,110 @@
+application:
+  trigram: SHP
+  name: Shipping API
+  tier: commerce
+firewall:
+  policy_set: shp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SHP_web-tier
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 1070
+      enabled: true
+    - name: allow-ops
+      source: SHP_dev-vpn
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1071
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 1072
+      enabled: true
+    - name: allow-egress-service
+      source: SHP_shipping-api
+      destination: SHP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 1073
+      enabled: true
+    - name: allow-sync
+      source: SHP_order-mesh
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 1074
+      enabled: true
+    - name: allow-trigram-peer
+      source: SEM_siem
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 1075
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SHP_shipping-api
+      destination: SEM_siem
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 1076
+      enabled: true
+    - name: deny-trigram-peer
+      source: INV_inventory
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 1077
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SHP_shipping-api
+      destination: INV_inventory
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 1078
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SHP_shipping-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 1079
+      enabled: true

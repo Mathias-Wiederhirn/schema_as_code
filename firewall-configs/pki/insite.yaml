@@ -1,0 +1,110 @@
+application:
+  trigram: PKI
+  name: PKI Services
+  tier: security
+firewall:
+  policy_set: pki-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: PKI_corp-users
+      destination: PKI_pki-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 870
+      enabled: true
+    - name: allow-ops
+      source: PKI_corp-admin
+      destination: PKI_pki-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 871
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: PKI_pki-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 872
+      enabled: true
+    - name: allow-egress-service
+      source: PKI_pki-service
+      destination: PKI_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 873
+      enabled: true
+    - name: allow-sync
+      source: PKI_integration-bus
+      destination: PKI_pki-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 874
+      enabled: true
+    - name: allow-trigram-peer
+      source: PIM_product-info
+      destination: PKI_pki-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 875
+      enabled: true
+    - name: allow-outbound-trigram
+      source: PKI_pki-services
+      destination: PIM_product-info
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 876
+      enabled: true
+    - name: deny-trigram-peer
+      source: ERP_erp-core
+      destination: PKI_pki-services
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 877
+      enabled: true
+    - name: deny-outbound-trigram
+      source: PKI_pki-services
+      destination: ERP_erp-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 878
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: PKI_pki-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 879
+      enabled: true

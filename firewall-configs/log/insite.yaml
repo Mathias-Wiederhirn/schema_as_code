@@ -1,0 +1,110 @@
+application:
+  trigram: LOG
+  name: Log Collector
+  tier: ops
+firewall:
+  policy_set: log-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: LOG_all-zones
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 514
+        - 6514
+      action: allow
+      priority: 650
+      enabled: true
+    - name: allow-ops
+      source: LOG_dev-vpn
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 651
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 652
+      enabled: true
+    - name: allow-egress-service
+      source: LOG_log-collector
+      destination: LOG_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 653
+      enabled: true
+    - name: allow-sync
+      source: LOG_monitoring-hub
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: udp
+      ports:
+        - 1521
+      action: allow
+      priority: 654
+      enabled: true
+    - name: allow-trigram-peer
+      source: LEG_legacy-bridge
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 655
+      enabled: true
+    - name: allow-outbound-trigram
+      source: LOG_log-collector
+      destination: LEG_legacy-bridge
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 656
+      enabled: true
+    - name: deny-trigram-peer
+      source: BIL_billing-engine
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 657
+      enabled: true
+    - name: deny-outbound-trigram
+      source: LOG_log-collector
+      destination: BIL_billing-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 658
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: LOG_log-collector
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 659
+      enabled: true

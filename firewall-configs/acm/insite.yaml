@@ -1,0 +1,110 @@
+application:
+  trigram: ACM
+  name: Access Management
+  tier: identity
+firewall:
+  policy_set: acm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ACM_corp-users
+      destination: ACM_idm-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 636
+      action: allow
+      priority: 100
+      enabled: true
+    - name: allow-ops
+      source: ACM_ops-admin
+      destination: ACM_idm-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 101
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ACM_idm-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 102
+      enabled: true
+    - name: allow-egress-service
+      source: ACM_idm-cluster
+      destination: ACM_directory-core
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 103
+      enabled: true
+    - name: allow-sync
+      source: ACM_integration-bus
+      destination: ACM_idm-cluster
+      direction: egress
+      protocol: udp
+      ports:
+        - 161
+      action: allow
+      priority: 104
+      enabled: false
+    - name: allow-trigram-peer
+      source: API_public-api
+      destination: ACM_access-management
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 105
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ACM_access-management
+      destination: API_public-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 106
+      enabled: true
+    - name: deny-trigram-peer
+      source: KEY_key-vault
+      destination: ACM_access-management
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 107
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ACM_access-management
+      destination: KEY_key-vault
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 108
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ACM_idm-cluster
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 109
+      enabled: true

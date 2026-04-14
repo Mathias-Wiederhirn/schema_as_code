@@ -1,0 +1,109 @@
+application:
+  trigram: MFA
+  name: MFA Service
+  tier: identity
+firewall:
+  policy_set: mfa-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MFA_internet
+      destination: MFA_mfa-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 730
+      enabled: true
+    - name: allow-ops
+      source: MFA_ops-admin
+      destination: MFA_mfa-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 731
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MFA_mfa-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 732
+      enabled: true
+    - name: allow-egress-service
+      source: MFA_mfa-gateway
+      destination: MFA_directory-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 733
+      enabled: true
+    - name: allow-sync
+      source: MFA_integration-bus
+      destination: MFA_mfa-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 734
+      enabled: true
+    - name: allow-trigram-peer
+      source: MET_metrics-gateway
+      destination: MFA_mfa-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 735
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MFA_mfa-service
+      destination: MET_metrics-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 736
+      enabled: true
+    - name: deny-trigram-peer
+      source: CRM_crm-platform
+      destination: MFA_mfa-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 737
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MFA_mfa-service
+      destination: CRM_crm-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 738
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MFA_mfa-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 739
+      enabled: true

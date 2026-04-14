@@ -1,0 +1,110 @@
+application:
+  trigram: BIL
+  name: Billing Engine
+  tier: finance
+firewall:
+  policy_set: bil-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: BIL_app-tier
+      destination: BIL_billing-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5432
+      action: allow
+      priority: 150
+      enabled: true
+    - name: allow-ops
+      source: BIL_corp-admin
+      destination: BIL_billing-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 151
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: BIL_billing-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 152
+      enabled: true
+    - name: allow-egress-service
+      source: BIL_billing-db
+      destination: BIL_audit-ledger
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 153
+      enabled: true
+    - name: allow-sync
+      source: BIL_integration-bus
+      destination: BIL_billing-db
+      direction: ingress
+      protocol: udp
+      ports:
+        - 5060
+      action: allow
+      priority: 154
+      enabled: true
+    - name: allow-trigram-peer
+      source: AUD_audit-platform
+      destination: BIL_billing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 155
+      enabled: true
+    - name: allow-outbound-trigram
+      source: BIL_billing-engine
+      destination: AUD_audit-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 156
+      enabled: true
+    - name: deny-trigram-peer
+      source: LOG_log-collector
+      destination: BIL_billing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 157
+      enabled: true
+    - name: deny-outbound-trigram
+      source: BIL_billing-engine
+      destination: LOG_log-collector
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 158
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: BIL_billing-db
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 159
+      enabled: true

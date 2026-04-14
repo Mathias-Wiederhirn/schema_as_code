@@ -1,0 +1,110 @@
+application:
+  trigram: SAP
+  name: SAP Gateway
+  tier: erp
+firewall:
+  policy_set: sap-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SAP_corp-users
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 3200
+      action: allow
+      priority: 1010
+      enabled: true
+    - name: allow-ops
+      source: SAP_dev-vpn
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1011
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 1012
+      enabled: true
+    - name: allow-egress-service
+      source: SAP_sap-gateway
+      destination: SAP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 1013
+      enabled: true
+    - name: allow-sync
+      source: SAP_integration-bus
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 1014
+      enabled: true
+    - name: allow-trigram-peer
+      source: RPT_report-builder
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 1015
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SAP_sap-gateway
+      destination: RPT_report-builder
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 1016
+      enabled: true
+    - name: deny-trigram-peer
+      source: HRM_hr-manager
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 1017
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SAP_sap-gateway
+      destination: HRM_hr-manager
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 1018
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SAP_sap-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 1019
+      enabled: true

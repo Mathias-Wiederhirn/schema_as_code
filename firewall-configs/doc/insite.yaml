@@ -1,0 +1,110 @@
+application:
+  trigram: DOC
+  name: Document Service
+  tier: app
+firewall:
+  policy_set: doc-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: DOC_corp-users
+      destination: DOC_doc-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 310
+      enabled: true
+    - name: allow-ops
+      source: DOC_ops-admin
+      destination: DOC_doc-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 311
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: DOC_doc-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 312
+      enabled: true
+    - name: allow-egress-service
+      source: DOC_doc-api
+      destination: DOC_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 313
+      enabled: true
+    - name: allow-sync
+      source: DOC_integration-bus
+      destination: DOC_doc-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 314
+      enabled: true
+    - name: allow-trigram-peer
+      source: DNS_dns-resolver
+      destination: DOC_document-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 315
+      enabled: true
+    - name: allow-outbound-trigram
+      source: DOC_document-service
+      destination: DNS_dns-resolver
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 316
+      enabled: true
+    - name: deny-trigram-peer
+      source: OMS_order-service
+      destination: DOC_document-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 317
+      enabled: true
+    - name: deny-outbound-trigram
+      source: DOC_document-service
+      destination: OMS_order-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 318
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: DOC_doc-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 319
+      enabled: true

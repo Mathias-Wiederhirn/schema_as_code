@@ -1,0 +1,110 @@
+application:
+  trigram: PRC
+  name: Pricing Engine
+  tier: commerce
+firewall:
+  policy_set: prc-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: PRC_web-tier
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8080
+      action: allow
+      priority: 890
+      enabled: true
+    - name: allow-ops
+      source: PRC_dev-vpn
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 891
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 892
+      enabled: true
+    - name: allow-egress-service
+      source: PRC_pricing-engine
+      destination: PRC_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 893
+      enabled: true
+    - name: allow-sync
+      source: PRC_order-mesh
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 894
+      enabled: true
+    - name: allow-trigram-peer
+      source: PLT_platform-core
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 895
+      enabled: true
+    - name: allow-outbound-trigram
+      source: PRC_pricing-engine
+      destination: PLT_platform-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 896
+      enabled: true
+    - name: deny-trigram-peer
+      source: EVT_event-bus
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 897
+      enabled: true
+    - name: deny-outbound-trigram
+      source: PRC_pricing-engine
+      destination: EVT_event-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 898
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: PRC_pricing-engine
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 899
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: REP
+  name: Reporting
+  tier: analytics
+firewall:
+  policy_set: rep-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: REP_corp-users
+      destination: REP_reporting-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 980
+      enabled: true
+    - name: allow-ops
+      source: REP_dev-vpn
+      destination: REP_reporting-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 981
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: REP_reporting-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 982
+      enabled: true
+    - name: allow-egress-service
+      source: REP_reporting-hub
+      destination: REP_lakehouse-bus
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 983
+      enabled: true
+    - name: allow-sync
+      source: REP_integration-bus
+      destination: REP_reporting-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 984
+      enabled: false
+    - name: allow-trigram-peer
+      source: RIS_risk-engine
+      destination: REP_reporting
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 985
+      enabled: true
+    - name: allow-outbound-trigram
+      source: REP_reporting
+      destination: RIS_risk-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 986
+      enabled: true
+    - name: deny-trigram-peer
+      source: GRF_graph-service
+      destination: REP_reporting
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 987
+      enabled: true
+    - name: deny-outbound-trigram
+      source: REP_reporting
+      destination: GRF_graph-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 988
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: REP_reporting-hub
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 989
+      enabled: true

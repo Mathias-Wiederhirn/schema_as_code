@@ -1,0 +1,110 @@
+application:
+  trigram: CMP
+  name: Compliance Vault
+  tier: ops
+firewall:
+  policy_set: cmp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CMP_audit-platform
+      destination: CMP_compliance-store
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9200
+      action: allow
+      priority: 220
+      enabled: true
+    - name: allow-ops
+      source: CMP_ops-admin
+      destination: CMP_compliance-store
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 221
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CMP_compliance-store
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 222
+      enabled: true
+    - name: allow-egress-service
+      source: CMP_compliance-store
+      destination: CMP_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 223
+      enabled: true
+    - name: allow-sync
+      source: CMP_monitoring-hub
+      destination: CMP_compliance-store
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 224
+      enabled: true
+    - name: allow-trigram-peer
+      source: CRM_crm-platform
+      destination: CMP_compliance-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 225
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CMP_compliance-vault
+      destination: CRM_crm-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 226
+      enabled: true
+    - name: deny-trigram-peer
+      source: MET_metrics-gateway
+      destination: CMP_compliance-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 227
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CMP_compliance-vault
+      destination: MET_metrics-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 228
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CMP_compliance-store
+      direction: ingress
+      protocol: any
+      ports:
+        - 21/tcp
+      action: deny
+      priority: 229
+      enabled: true

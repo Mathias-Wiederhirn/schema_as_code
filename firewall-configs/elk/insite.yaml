@@ -1,0 +1,110 @@
+application:
+  trigram: ELK
+  name: Observability Stack
+  tier: ops
+firewall:
+  policy_set: elk-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ELK_app-tier
+      destination: ELK_elk-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5044
+        - 9200
+      action: allow
+      priority: 350
+      enabled: true
+    - name: allow-ops
+      source: ELK_dev-vpn
+      destination: ELK_elk-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 351
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ELK_elk-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 352
+      enabled: true
+    - name: allow-egress-service
+      source: ELK_elk-stack
+      destination: ELK_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 353
+      enabled: true
+    - name: allow-sync
+      source: ELK_monitoring-hub
+      destination: ELK_elk-stack
+      direction: ingress
+      protocol: udp
+      ports:
+        - 4317
+      action: allow
+      priority: 354
+      enabled: true
+    - name: allow-trigram-peer
+      source: EDI_edi-gateway
+      destination: ELK_observability-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 355
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ELK_observability-stack
+      destination: EDI_edi-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 356
+      enabled: true
+    - name: deny-trigram-peer
+      source: PDF_pdf-renderer
+      destination: ELK_observability-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 357
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ELK_observability-stack
+      destination: PDF_pdf-renderer
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 358
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ELK_elk-stack
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 359
+      enabled: true

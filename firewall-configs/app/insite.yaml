@@ -1,0 +1,110 @@
+application:
+  trigram: APP
+  name: Application Core
+  tier: app
+firewall:
+  policy_set: app-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: APP_web-tier
+      destination: APP_app-tier
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8080
+        - 8443
+      action: allow
+      priority: 120
+      enabled: true
+    - name: allow-ops
+      source: APP_corp-admin
+      destination: APP_app-tier
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 121
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: APP_app-tier
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 122
+      enabled: true
+    - name: allow-egress-service
+      source: APP_app-tier
+      destination: APP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 123
+      enabled: true
+    - name: allow-sync
+      source: APP_integration-bus
+      destination: APP_app-tier
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 124
+      enabled: true
+    - name: allow-trigram-peer
+      source: ATH_auth-service
+      destination: APP_application-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 125
+      enabled: true
+    - name: allow-outbound-trigram
+      source: APP_application-core
+      destination: ATH_auth-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 126
+      enabled: true
+    - name: deny-trigram-peer
+      source: LAB_lab-platform
+      destination: APP_application-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 127
+      enabled: true
+    - name: deny-outbound-trigram
+      source: APP_application-core
+      destination: LAB_lab-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 128
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: APP_app-tier
+      direction: ingress
+      protocol: any
+      ports:
+        - 21/tcp
+      action: deny
+      priority: 129
+      enabled: true

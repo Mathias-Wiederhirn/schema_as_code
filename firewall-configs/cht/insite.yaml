@@ -1,0 +1,110 @@
+application:
+  trigram: CHT
+  name: Chat Gateway
+  tier: collab
+firewall:
+  policy_set: cht-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CHT_internet
+      destination: CHT_chat-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5222
+      action: allow
+      priority: 200
+      enabled: true
+    - name: allow-ops
+      source: CHT_dev-vpn
+      destination: CHT_chat-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 201
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CHT_chat-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 202
+      enabled: true
+    - name: allow-egress-service
+      source: CHT_chat-hub
+      destination: CHT_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 203
+      enabled: true
+    - name: allow-sync
+      source: CHT_integration-bus
+      destination: CHT_chat-hub
+      direction: egress
+      protocol: udp
+      ports:
+        - 8200
+      action: allow
+      priority: 204
+      enabled: true
+    - name: allow-trigram-peer
+      source: CIC_ci-control
+      destination: CHT_chat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 205
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CHT_chat-gateway
+      destination: CIC_ci-control
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 206
+      enabled: true
+    - name: deny-trigram-peer
+      source: MED_media-pipeline
+      destination: CHT_chat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 207
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CHT_chat-gateway
+      destination: MED_media-pipeline
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 208
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CHT_chat-hub
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 209
+      enabled: true

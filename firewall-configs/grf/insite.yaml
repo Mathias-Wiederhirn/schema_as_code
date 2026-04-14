@@ -1,0 +1,110 @@
+application:
+  trigram: GRF
+  name: Graph Service
+  tier: analytics
+firewall:
+  policy_set: grf-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: GRF_app-tier
+      destination: GRF_graph-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 7687
+      action: allow
+      priority: 480
+      enabled: true
+    - name: allow-ops
+      source: GRF_corp-admin
+      destination: GRF_graph-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 481
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: GRF_graph-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 482
+      enabled: true
+    - name: allow-egress-service
+      source: GRF_graph-db
+      destination: GRF_lakehouse-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 483
+      enabled: true
+    - name: allow-sync
+      source: GRF_integration-bus
+      destination: GRF_graph-db
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 484
+      enabled: true
+    - name: allow-trigram-peer
+      source: HCM_human-capital
+      destination: GRF_graph-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 485
+      enabled: true
+    - name: allow-outbound-trigram
+      source: GRF_graph-service
+      destination: HCM_human-capital
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 486
+      enabled: true
+    - name: deny-trigram-peer
+      source: REP_reporting
+      destination: GRF_graph-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 487
+      enabled: true
+    - name: deny-outbound-trigram
+      source: GRF_graph-service
+      destination: REP_reporting
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 488
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: GRF_graph-db
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 489
+      enabled: true

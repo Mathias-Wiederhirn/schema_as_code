@@ -1,0 +1,110 @@
+application:
+  trigram: FIL
+  name: File Transfer
+  tier: integration
+firewall:
+  policy_set: fil-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: FIL_partners
+      destination: FIL_mft-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 420
+      enabled: true
+    - name: allow-ops
+      source: FIL_corp-admin
+      destination: FIL_mft-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 421
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: FIL_mft-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 422
+      enabled: true
+    - name: allow-egress-service
+      source: FIL_mft-gateway
+      destination: FIL_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 423
+      enabled: true
+    - name: allow-sync
+      source: FIL_integration-bus
+      destination: FIL_mft-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 424
+      enabled: false
+    - name: allow-trigram-peer
+      source: FIN_finance-api
+      destination: FIL_file-transfer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 425
+      enabled: true
+    - name: allow-outbound-trigram
+      source: FIL_file-transfer
+      destination: FIN_finance-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 426
+      enabled: true
+    - name: deny-trigram-peer
+      source: QAS_qa-services
+      destination: FIL_file-transfer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 427
+      enabled: true
+    - name: deny-outbound-trigram
+      source: FIL_file-transfer
+      destination: QAS_qa-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 428
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: FIL_mft-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 429
+      enabled: true

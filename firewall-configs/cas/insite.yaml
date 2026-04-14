@@ -1,0 +1,110 @@
+application:
+  trigram: CAS
+  name: Case Tracking
+  tier: app
+firewall:
+  policy_set: cas-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CAS_corp-users
+      destination: CAS_case-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 190
+      enabled: true
+    - name: allow-ops
+      source: CAS_ops-admin
+      destination: CAS_case-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 191
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CAS_case-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 192
+      enabled: true
+    - name: allow-egress-service
+      source: CAS_case-api
+      destination: CAS_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 193
+      enabled: true
+    - name: allow-sync
+      source: CAS_integration-bus
+      destination: CAS_case-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 194
+      enabled: true
+    - name: allow-trigram-peer
+      source: CAD_card-services
+      destination: CAS_case-tracking
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 195
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CAS_case-tracking
+      destination: CAD_card-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 196
+      enabled: true
+    - name: deny-trigram-peer
+      source: MDM_master-data
+      destination: CAS_case-tracking
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 197
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CAS_case-tracking
+      destination: MDM_master-data
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 198
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CAS_case-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 445/tcp
+      action: deny
+      priority: 199
+      enabled: true

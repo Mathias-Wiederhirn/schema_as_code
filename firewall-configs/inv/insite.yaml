@@ -1,0 +1,110 @@
+application:
+  trigram: INV
+  name: Inventory
+  tier: app
+firewall:
+  policy_set: inv-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: INV_corp-users
+      destination: INV_inventory-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5432
+      action: allow
+      priority: 570
+      enabled: true
+    - name: allow-ops
+      source: INV_corp-admin
+      destination: INV_inventory-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 571
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: INV_inventory-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 572
+      enabled: true
+    - name: allow-egress-service
+      source: INV_inventory-api
+      destination: INV_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 573
+      enabled: true
+    - name: allow-sync
+      source: INV_integration-bus
+      destination: INV_inventory-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 574
+      enabled: true
+    - name: allow-trigram-peer
+      source: INS_insights-engine
+      destination: INV_inventory
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 575
+      enabled: true
+    - name: allow-outbound-trigram
+      source: INV_inventory
+      destination: INS_insights-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 576
+      enabled: true
+    - name: deny-trigram-peer
+      source: SHP_shipping-api
+      destination: INV_inventory
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 577
+      enabled: true
+    - name: deny-outbound-trigram
+      source: INV_inventory
+      destination: SHP_shipping-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 578
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: INV_inventory-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 579
+      enabled: true

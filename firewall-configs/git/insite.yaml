@@ -1,0 +1,110 @@
+application:
+  trigram: GIT
+  name: Git Service
+  tier: devops
+firewall:
+  policy_set: git-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: GIT_dev-vpn
+      destination: GIT_git-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 460
+      enabled: true
+    - name: allow-ops
+      source: GIT_ops-admin
+      destination: GIT_git-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 461
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: GIT_git-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 462
+      enabled: true
+    - name: allow-egress-service
+      source: GIT_git-service
+      destination: GIT_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 463
+      enabled: true
+    - name: allow-sync
+      source: GIT_integration-bus
+      destination: GIT_git-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 464
+      enabled: true
+    - name: allow-trigram-peer
+      source: GOV_governance-api
+      destination: GIT_git-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 465
+      enabled: true
+    - name: allow-outbound-trigram
+      source: GIT_git-service
+      destination: GOV_governance-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 466
+      enabled: true
+    - name: deny-trigram-peer
+      source: REC_recommendation
+      destination: GIT_git-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 467
+      enabled: true
+    - name: deny-outbound-trigram
+      source: GIT_git-service
+      destination: REC_recommendation
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 468
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: GIT_git-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 469
+      enabled: true

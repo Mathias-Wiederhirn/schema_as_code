@@ -1,0 +1,110 @@
+application:
+  trigram: OMS
+  name: Order Service
+  tier: commerce
+firewall:
+  policy_set: oms-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: OMS_web-tier
+      destination: OMS_order-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5432
+      action: allow
+      priority: 810
+      enabled: true
+    - name: allow-ops
+      source: OMS_corp-admin
+      destination: OMS_order-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 811
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: OMS_order-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 812
+      enabled: true
+    - name: allow-egress-service
+      source: OMS_order-service
+      destination: OMS_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 813
+      enabled: true
+    - name: allow-sync
+      source: OMS_order-mesh
+      destination: OMS_order-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 814
+      enabled: true
+    - name: allow-trigram-peer
+      source: OBS_observability
+      destination: OMS_order-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 815
+      enabled: true
+    - name: allow-outbound-trigram
+      source: OMS_order-service
+      destination: OBS_observability
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 816
+      enabled: true
+    - name: deny-trigram-peer
+      source: DOC_document-service
+      destination: OMS_order-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 817
+      enabled: true
+    - name: deny-outbound-trigram
+      source: OMS_order-service
+      destination: DOC_document-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 818
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: OMS_order-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 819
+      enabled: true

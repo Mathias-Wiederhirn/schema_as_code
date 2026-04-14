@@ -1,0 +1,109 @@
+application:
+  trigram: GAT
+  name: Gateway Mesh
+  tier: edge
+firewall:
+  policy_set: gat-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: GAT_internet
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 450
+      enabled: true
+    - name: allow-ops
+      source: GAT_corp-admin
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 451
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 452
+      enabled: true
+    - name: allow-egress-service
+      source: GAT_gateway-mesh
+      destination: GAT_origin-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 453
+      enabled: true
+    - name: allow-sync
+      source: GAT_integration-bus
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: udp
+      ports:
+        - 161
+      action: allow
+      priority: 454
+      enabled: true
+    - name: allow-trigram-peer
+      source: FRA_fraud-engine
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 455
+      enabled: true
+    - name: allow-outbound-trigram
+      source: GAT_gateway-mesh
+      destination: FRA_fraud-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 456
+      enabled: true
+    - name: deny-trigram-peer
+      source: RAB_rabbit-cluster
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 457
+      enabled: true
+    - name: deny-outbound-trigram
+      source: GAT_gateway-mesh
+      destination: RAB_rabbit-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 458
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: GAT_gateway-mesh
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 459
+      enabled: true

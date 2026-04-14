@@ -1,0 +1,110 @@
+application:
+  trigram: FIN
+  name: Finance API
+  tier: finance
+firewall:
+  policy_set: fin-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: FIN_corp-users
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 430
+      enabled: true
+    - name: allow-ops
+      source: FIN_ops-admin
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 431
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 432
+      enabled: true
+    - name: allow-egress-service
+      source: FIN_finance-api
+      destination: FIN_audit-ledger
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 433
+      enabled: true
+    - name: allow-sync
+      source: FIN_integration-bus
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 434
+      enabled: true
+    - name: allow-trigram-peer
+      source: FIL_file-transfer
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 435
+      enabled: true
+    - name: allow-outbound-trigram
+      source: FIN_finance-api
+      destination: FIL_file-transfer
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 436
+      enabled: true
+    - name: deny-trigram-peer
+      source: QRY_query-engine
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 437
+      enabled: true
+    - name: deny-outbound-trigram
+      source: FIN_finance-api
+      destination: QRY_query-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 438
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: FIN_finance-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 439
+      enabled: true

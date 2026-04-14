@@ -1,0 +1,110 @@
+application:
+  trigram: MON
+  name: Monitoring Suite
+  tier: ops
+firewall:
+  policy_set: mon-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MON_ops-admin
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9090
+      action: allow
+      priority: 750
+      enabled: true
+    - name: allow-ops
+      source: MON_corp-admin
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 751
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 752
+      enabled: true
+    - name: allow-egress-service
+      source: MON_monitoring-suite
+      destination: MON_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 753
+      enabled: true
+    - name: allow-sync
+      source: MON_monitoring-hub
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: udp
+      ports:
+        - 8443
+      action: allow
+      priority: 754
+      enabled: true
+    - name: allow-trigram-peer
+      source: MLP_ml-platform
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 755
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MON_monitoring-suite
+      destination: MLP_ml-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 756
+      enabled: true
+    - name: deny-trigram-peer
+      source: CTL_control-plane
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 757
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MON_monitoring-suite
+      destination: CTL_control-plane
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 758
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MON_monitoring-suite
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 759
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: REC
+  name: Recommendation
+  tier: analytics
+firewall:
+  policy_set: rec-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: REC_web-tier
+      destination: REC_recommendation-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 960
+      enabled: true
+    - name: allow-ops
+      source: REC_corp-admin
+      destination: REC_recommendation-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 961
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: REC_recommendation-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 962
+      enabled: true
+    - name: allow-egress-service
+      source: REC_recommendation-api
+      destination: REC_lakehouse-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 963
+      enabled: true
+    - name: allow-sync
+      source: REC_integration-bus
+      destination: REC_recommendation-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 964
+      enabled: true
+    - name: allow-trigram-peer
+      source: REG_registry
+      destination: REC_recommendation
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 965
+      enabled: true
+    - name: allow-outbound-trigram
+      source: REC_recommendation
+      destination: REG_registry
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 966
+      enabled: true
+    - name: deny-trigram-peer
+      source: GIT_git-service
+      destination: REC_recommendation
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 967
+      enabled: true
+    - name: deny-outbound-trigram
+      source: REC_recommendation
+      destination: GIT_git-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 968
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: REC_recommendation-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 969
+      enabled: true

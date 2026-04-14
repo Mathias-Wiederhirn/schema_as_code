@@ -1,0 +1,110 @@
+application:
+  trigram: MLP
+  name: ML Platform
+  tier: analytics
+firewall:
+  policy_set: mlp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MLP_data-science
+      destination: MLP_ml-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8888
+      action: allow
+      priority: 740
+      enabled: true
+    - name: allow-ops
+      source: MLP_dev-vpn
+      destination: MLP_ml-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 741
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MLP_ml-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 742
+      enabled: true
+    - name: allow-egress-service
+      source: MLP_ml-platform
+      destination: MLP_lakehouse-bus
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 743
+      enabled: true
+    - name: allow-sync
+      source: MLP_integration-bus
+      destination: MLP_ml-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 744
+      enabled: false
+    - name: allow-trigram-peer
+      source: MON_monitoring-suite
+      destination: MLP_ml-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 745
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MLP_ml-platform
+      destination: MON_monitoring-suite
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 746
+      enabled: true
+    - name: deny-trigram-peer
+      source: CSH_cash-ledger
+      destination: MLP_ml-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 747
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MLP_ml-platform
+      destination: CSH_cash-ledger
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 748
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MLP_ml-platform
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 749
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: GOV
+  name: Governance API
+  tier: ops
+firewall:
+  policy_set: gov-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: GOV_ops-admin
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 470
+      enabled: true
+    - name: allow-ops
+      source: GOV_dev-vpn
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 471
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 472
+      enabled: true
+    - name: allow-egress-service
+      source: GOV_governance-api
+      destination: GOV_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 473
+      enabled: true
+    - name: allow-sync
+      source: GOV_monitoring-hub
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 474
+      enabled: true
+    - name: allow-trigram-peer
+      source: GIT_git-service
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 475
+      enabled: true
+    - name: allow-outbound-trigram
+      source: GOV_governance-api
+      destination: GIT_git-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 476
+      enabled: true
+    - name: deny-trigram-peer
+      source: REG_registry
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 477
+      enabled: true
+    - name: deny-outbound-trigram
+      source: GOV_governance-api
+      destination: REG_registry
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 478
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: GOV_governance-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 479
+      enabled: true

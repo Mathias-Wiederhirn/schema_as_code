@@ -1,0 +1,110 @@
+application:
+  trigram: ORC
+  name: Orchestration
+  tier: platform
+firewall:
+  policy_set: orc-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ORC_ops-admin
+      destination: ORC_orchestration-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 6443
+      action: allow
+      priority: 830
+      enabled: true
+    - name: allow-ops
+      source: ORC_dev-vpn
+      destination: ORC_orchestration-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 831
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ORC_orchestration-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 832
+      enabled: true
+    - name: allow-egress-service
+      source: ORC_orchestration-api
+      destination: ORC_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 833
+      enabled: true
+    - name: allow-sync
+      source: ORC_control-plane
+      destination: ORC_orchestration-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 834
+      enabled: true
+    - name: allow-trigram-peer
+      source: OPS_operations-hub
+      destination: ORC_orchestration
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 835
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ORC_orchestration
+      destination: OPS_operations-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 836
+      enabled: true
+    - name: deny-trigram-peer
+      source: ECM_commerce-engine
+      destination: ORC_orchestration
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 837
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ORC_orchestration
+      destination: ECM_commerce-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 838
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ORC_orchestration-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 839
+      enabled: true

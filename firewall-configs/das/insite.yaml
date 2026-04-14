@@ -1,0 +1,110 @@
+application:
+  trigram: DAS
+  name: Data Science
+  tier: analytics
+firewall:
+  policy_set: das-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: DAS_analytics-vpc
+      destination: DAS_ml-workbench
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8888
+      action: allow
+      priority: 270
+      enabled: true
+    - name: allow-ops
+      source: DAS_corp-admin
+      destination: DAS_ml-workbench
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 271
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: DAS_ml-workbench
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 272
+      enabled: true
+    - name: allow-egress-service
+      source: DAS_ml-workbench
+      destination: DAS_lakehouse-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 273
+      enabled: true
+    - name: allow-sync
+      source: DAS_integration-bus
+      destination: DAS_ml-workbench
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 274
+      enabled: true
+    - name: allow-trigram-peer
+      source: CUS_customer-hub
+      destination: DAS_data-science
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 275
+      enabled: true
+    - name: allow-outbound-trigram
+      source: DAS_data-science
+      destination: CUS_customer-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 276
+      enabled: true
+    - name: deny-trigram-peer
+      source: NAT_nat-gateway
+      destination: DAS_data-science
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 277
+      enabled: true
+    - name: deny-outbound-trigram
+      source: DAS_data-science
+      destination: NAT_nat-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 278
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: DAS_ml-workbench
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 279
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: QRY
+  name: Query Engine
+  tier: analytics
+firewall:
+  policy_set: qry-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: QRY_bi-tools
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8123
+      action: allow
+      priority: 930
+      enabled: true
+    - name: allow-ops
+      source: QRY_corp-admin
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 931
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 932
+      enabled: true
+    - name: allow-egress-service
+      source: QRY_query-engine
+      destination: QRY_lakehouse-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 933
+      enabled: true
+    - name: allow-sync
+      source: QRY_integration-bus
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 934
+      enabled: true
+    - name: allow-trigram-peer
+      source: QAS_qa-services
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 935
+      enabled: true
+    - name: allow-outbound-trigram
+      source: QRY_query-engine
+      destination: QAS_qa-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 936
+      enabled: true
+    - name: deny-trigram-peer
+      source: FIN_finance-api
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 937
+      enabled: true
+    - name: deny-outbound-trigram
+      source: QRY_query-engine
+      destination: FIN_finance-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 938
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: QRY_query-engine
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 939
+      enabled: true

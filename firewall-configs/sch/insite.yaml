@@ -1,0 +1,110 @@
+application:
+  trigram: SCH
+  name: Scheduler
+  tier: batch
+firewall:
+  policy_set: sch-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SCH_ops-admin
+      destination: SCH_scheduler-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 22
+      action: allow
+      priority: 1020
+      enabled: true
+    - name: allow-ops
+      source: SCH_corp-admin
+      destination: SCH_scheduler-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1021
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SCH_scheduler-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 1022
+      enabled: true
+    - name: allow-egress-service
+      source: SCH_scheduler-core
+      destination: SCH_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 1023
+      enabled: true
+    - name: allow-sync
+      source: SCH_integration-bus
+      destination: SCH_scheduler-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 1024
+      enabled: true
+    - name: allow-trigram-peer
+      source: SCM_source-manager
+      destination: SCH_scheduler
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 1025
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SCH_scheduler
+      destination: SCM_source-manager
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 1026
+      enabled: true
+    - name: deny-trigram-peer
+      source: IAM_identity-access
+      destination: SCH_scheduler
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 1027
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SCH_scheduler
+      destination: IAM_identity-access
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 1028
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SCH_scheduler-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 1029
+      enabled: true

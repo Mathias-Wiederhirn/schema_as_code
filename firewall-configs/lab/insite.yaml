@@ -1,0 +1,110 @@
+application:
+  trigram: LAB
+  name: Lab Platform
+  tier: dev
+firewall:
+  policy_set: lab-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: LAB_dev-vpn
+      destination: LAB_lab-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 620
+      enabled: true
+    - name: allow-ops
+      source: LAB_dev-vpn
+      destination: LAB_lab-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 621
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: LAB_lab-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 622
+      enabled: true
+    - name: allow-egress-service
+      source: LAB_lab-platform
+      destination: LAB_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 623
+      enabled: true
+    - name: allow-sync
+      source: LAB_integration-bus
+      destination: LAB_lab-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 624
+      enabled: true
+    - name: allow-trigram-peer
+      source: LDP_ldap-service
+      destination: LAB_lab-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 625
+      enabled: true
+    - name: allow-outbound-trigram
+      source: LAB_lab-platform
+      destination: LDP_ldap-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 626
+      enabled: true
+    - name: deny-trigram-peer
+      source: APP_application-core
+      destination: LAB_lab-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 627
+      enabled: true
+    - name: deny-outbound-trigram
+      source: LAB_lab-platform
+      destination: APP_application-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 628
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: LAB_lab-platform
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 629
+      enabled: true

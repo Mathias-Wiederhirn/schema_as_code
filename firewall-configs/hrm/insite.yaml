@@ -1,0 +1,110 @@
+application:
+  trigram: HRM
+  name: HR Manager
+  tier: corp
+firewall:
+  policy_set: hrm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: HRM_corp-users
+      destination: HRM_hrm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 510
+      enabled: true
+    - name: allow-ops
+      source: HRM_corp-admin
+      destination: HRM_hrm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 511
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: HRM_hrm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 512
+      enabled: true
+    - name: allow-egress-service
+      source: HRM_hrm-core
+      destination: HRM_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 513
+      enabled: true
+    - name: allow-sync
+      source: HRM_corp-services
+      destination: HRM_hrm-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 514
+      enabled: true
+    - name: allow-trigram-peer
+      source: HLP_helpdesk
+      destination: HRM_hr-manager
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 515
+      enabled: true
+    - name: allow-outbound-trigram
+      source: HRM_hr-manager
+      destination: HLP_helpdesk
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 516
+      enabled: true
+    - name: deny-trigram-peer
+      source: SAP_sap-gateway
+      destination: HRM_hr-manager
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 517
+      enabled: true
+    - name: deny-outbound-trigram
+      source: HRM_hr-manager
+      destination: SAP_sap-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 518
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: HRM_hrm-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 519
+      enabled: true

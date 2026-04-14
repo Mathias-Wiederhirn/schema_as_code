@@ -1,0 +1,110 @@
+application:
+  trigram: IOT
+  name: IoT Hub
+  tier: edge
+firewall:
+  policy_set: iot-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: IOT_internet
+      destination: IOT_iot-broker
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8883
+      action: allow
+      priority: 580
+      enabled: true
+    - name: allow-ops
+      source: IOT_ops-admin
+      destination: IOT_iot-broker
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 581
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: IOT_iot-broker
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 582
+      enabled: true
+    - name: allow-egress-service
+      source: IOT_iot-broker
+      destination: IOT_origin-cluster
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 583
+      enabled: true
+    - name: allow-sync
+      source: IOT_integration-bus
+      destination: IOT_iot-broker
+      direction: egress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 584
+      enabled: false
+    - name: allow-trigram-peer
+      source: KAF_kafka-cluster
+      destination: IOT_iot-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 585
+      enabled: true
+    - name: allow-outbound-trigram
+      source: IOT_iot-hub
+      destination: KAF_kafka-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 586
+      enabled: true
+    - name: deny-trigram-peer
+      source: SIG_signing-service
+      destination: IOT_iot-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 587
+      enabled: true
+    - name: deny-outbound-trigram
+      source: IOT_iot-hub
+      destination: SIG_signing-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 588
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: IOT_iot-broker
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 589
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: MES
+  name: Messaging Core
+  tier: messaging
+firewall:
+  policy_set: mes-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MES_app-tier
+      destination: MES_message-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5672
+      action: allow
+      priority: 710
+      enabled: true
+    - name: allow-ops
+      source: MES_dev-vpn
+      destination: MES_message-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 711
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MES_message-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 712
+      enabled: true
+    - name: allow-egress-service
+      source: MES_message-core
+      destination: MES_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 713
+      enabled: true
+    - name: allow-sync
+      source: MES_message-backbone
+      destination: MES_message-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 714
+      enabled: true
+    - name: allow-trigram-peer
+      source: MED_media-pipeline
+      destination: MES_messaging-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 715
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MES_messaging-core
+      destination: MED_media-pipeline
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 716
+      enabled: true
+    - name: deny-trigram-peer
+      source: CIC_ci-control
+      destination: MES_messaging-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 717
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MES_messaging-core
+      destination: CIC_ci-control
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 718
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MES_message-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 719
+      enabled: true

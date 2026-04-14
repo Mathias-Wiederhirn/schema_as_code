@@ -1,0 +1,110 @@
+application:
+  trigram: EVT
+  name: Event Bus
+  tier: integration
+firewall:
+  policy_set: evt-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: EVT_app-tier
+      destination: EVT_event-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+        - 9092
+      action: allow
+      priority: 390
+      enabled: true
+    - name: allow-ops
+      source: EVT_corp-admin
+      destination: EVT_event-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 391
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: EVT_event-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 392
+      enabled: true
+    - name: allow-egress-service
+      source: EVT_event-brokers
+      destination: EVT_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 393
+      enabled: true
+    - name: allow-sync
+      source: EVT_integration-bus
+      destination: EVT_event-brokers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 394
+      enabled: true
+    - name: allow-trigram-peer
+      source: ETL_etl-pipeline
+      destination: EVT_event-bus
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 395
+      enabled: true
+    - name: allow-outbound-trigram
+      source: EVT_event-bus
+      destination: ETL_etl-pipeline
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 396
+      enabled: true
+    - name: deny-trigram-peer
+      source: PRC_pricing-engine
+      destination: EVT_event-bus
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 397
+      enabled: true
+    - name: deny-outbound-trigram
+      source: EVT_event-bus
+      destination: PRC_pricing-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 398
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: EVT_event-brokers
+      direction: ingress
+      protocol: any
+      ports:
+        - 21/tcp
+      action: deny
+      priority: 399
+      enabled: true

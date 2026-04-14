@@ -1,0 +1,110 @@
+application:
+  trigram: DBA
+  name: Database Admin
+  tier: ops
+firewall:
+  policy_set: dba-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: DBA_dba-jump
+      destination: DBA_postgres-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 5432
+      action: allow
+      priority: 280
+      enabled: true
+    - name: allow-ops
+      source: DBA_ops-admin
+      destination: DBA_postgres-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 281
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: DBA_postgres-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 282
+      enabled: true
+    - name: allow-egress-service
+      source: DBA_postgres-fleet
+      destination: DBA_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 283
+      enabled: true
+    - name: allow-sync
+      source: DBA_monitoring-hub
+      destination: DBA_postgres-fleet
+      direction: egress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 284
+      enabled: true
+    - name: allow-trigram-peer
+      source: DLP_data-loss-prevention
+      destination: DBA_database-admin
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 285
+      enabled: true
+    - name: allow-outbound-trigram
+      source: DBA_database-admin
+      destination: DLP_data-loss-prevention
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 286
+      enabled: true
+    - name: deny-trigram-peer
+      source: NET_network-core
+      destination: DBA_database-admin
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 287
+      enabled: true
+    - name: deny-outbound-trigram
+      source: DBA_database-admin
+      destination: NET_network-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 288
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: DBA_postgres-fleet
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 289
+      enabled: true

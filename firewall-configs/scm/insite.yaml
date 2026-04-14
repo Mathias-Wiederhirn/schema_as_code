@@ -1,0 +1,110 @@
+application:
+  trigram: SCM
+  name: Source Manager
+  tier: devops
+firewall:
+  policy_set: scm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SCM_dev-vpn
+      destination: SCM_scm-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1030
+      enabled: true
+    - name: allow-ops
+      source: SCM_ops-admin
+      destination: SCM_scm-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1031
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SCM_scm-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 1032
+      enabled: true
+    - name: allow-egress-service
+      source: SCM_scm-service
+      destination: SCM_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 1033
+      enabled: true
+    - name: allow-sync
+      source: SCM_integration-bus
+      destination: SCM_scm-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 1034
+      enabled: true
+    - name: allow-trigram-peer
+      source: SCH_scheduler
+      destination: SCM_source-manager
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 1035
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SCM_source-manager
+      destination: SCH_scheduler
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 1036
+      enabled: true
+    - name: deny-trigram-peer
+      source: IDS_intrusion-detection
+      destination: SCM_source-manager
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 1037
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SCM_source-manager
+      destination: IDS_intrusion-detection
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 1038
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SCM_scm-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 1039
+      enabled: true

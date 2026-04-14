@@ -1,0 +1,110 @@
+application:
+  trigram: CIC
+  name: CI Control
+  tier: devops
+firewall:
+  policy_set: cic-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CIC_dev-vpn
+      destination: CIC_ci-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 22
+      action: allow
+      priority: 210
+      enabled: true
+    - name: allow-ops
+      source: CIC_corp-admin
+      destination: CIC_ci-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 211
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CIC_ci-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 212
+      enabled: true
+    - name: allow-egress-service
+      source: CIC_ci-runners
+      destination: CIC_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 213
+      enabled: true
+    - name: allow-sync
+      source: CIC_integration-bus
+      destination: CIC_ci-runners
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 214
+      enabled: true
+    - name: allow-trigram-peer
+      source: CHT_chat-gateway
+      destination: CIC_ci-control
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 215
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CIC_ci-control
+      destination: CHT_chat-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 216
+      enabled: true
+    - name: deny-trigram-peer
+      source: MES_messaging-core
+      destination: CIC_ci-control
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 217
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CIC_ci-control
+      destination: MES_messaging-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 218
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CIC_ci-runners
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 219
+      enabled: true

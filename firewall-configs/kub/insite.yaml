@@ -1,0 +1,110 @@
+application:
+  trigram: KUB
+  name: Kubernetes API
+  tier: platform
+firewall:
+  policy_set: kub-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: KUB_ops-admin
+      destination: KUB_k8s-control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 6443
+      action: allow
+      priority: 610
+      enabled: true
+    - name: allow-ops
+      source: KUB_ops-admin
+      destination: KUB_k8s-control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 611
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: KUB_k8s-control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 612
+      enabled: true
+    - name: allow-egress-service
+      source: KUB_k8s-control-plane
+      destination: KUB_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 613
+      enabled: true
+    - name: allow-sync
+      source: KUB_control-plane
+      destination: KUB_k8s-control-plane
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 614
+      enabled: true
+    - name: allow-trigram-peer
+      source: KEY_key-vault
+      destination: KUB_kubernetes-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 615
+      enabled: true
+    - name: allow-outbound-trigram
+      source: KUB_kubernetes-api
+      destination: KEY_key-vault
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 616
+      enabled: true
+    - name: deny-trigram-peer
+      source: API_public-api
+      destination: KUB_kubernetes-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 617
+      enabled: true
+    - name: deny-outbound-trigram
+      source: KUB_kubernetes-api
+      destination: API_public-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 618
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: KUB_k8s-control-plane
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 619
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: IDS
+  name: Intrusion Detection
+  tier: security
+firewall:
+  policy_set: ids-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: IDS_tap-network
+      destination: IDS_ids-sensors
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 514
+      action: allow
+      priority: 530
+      enabled: true
+    - name: allow-ops
+      source: IDS_dev-vpn
+      destination: IDS_ids-sensors
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 531
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: IDS_ids-sensors
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 532
+      enabled: true
+    - name: allow-egress-service
+      source: IDS_ids-sensors
+      destination: IDS_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 533
+      enabled: true
+    - name: allow-sync
+      source: IDS_integration-bus
+      destination: IDS_ids-sensors
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 534
+      enabled: true
+    - name: allow-trigram-peer
+      source: IAM_identity-access
+      destination: IDS_intrusion-detection
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 535
+      enabled: true
+    - name: allow-outbound-trigram
+      source: IDS_intrusion-detection
+      destination: IAM_identity-access
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 536
+      enabled: true
+    - name: deny-trigram-peer
+      source: SCM_source-manager
+      destination: IDS_intrusion-detection
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 537
+      enabled: true
+    - name: deny-outbound-trigram
+      source: IDS_intrusion-detection
+      destination: SCM_source-manager
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 538
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: IDS_ids-sensors
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 539
+      enabled: true

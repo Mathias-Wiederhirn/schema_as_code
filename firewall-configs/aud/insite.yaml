@@ -1,0 +1,110 @@
+application:
+  trigram: AUD
+  name: Audit Platform
+  tier: ops
+firewall:
+  policy_set: aud-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: AUD_ops-admin
+      destination: AUD_audit-store
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9200
+      action: allow
+      priority: 140
+      enabled: true
+    - name: allow-ops
+      source: AUD_dev-vpn
+      destination: AUD_audit-store
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 141
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: AUD_audit-store
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 142
+      enabled: true
+    - name: allow-egress-service
+      source: AUD_audit-store
+      destination: AUD_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 143
+      enabled: true
+    - name: allow-sync
+      source: AUD_monitoring-hub
+      destination: AUD_audit-store
+      direction: egress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 144
+      enabled: true
+    - name: allow-trigram-peer
+      source: BIL_billing-engine
+      destination: AUD_audit-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 145
+      enabled: true
+    - name: allow-outbound-trigram
+      source: AUD_audit-platform
+      destination: BIL_billing-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 146
+      enabled: true
+    - name: deny-trigram-peer
+      source: LEG_legacy-bridge
+      destination: AUD_audit-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 147
+      enabled: true
+    - name: deny-outbound-trigram
+      source: AUD_audit-platform
+      destination: LEG_legacy-bridge
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 148
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: AUD_audit-store
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 149
+      enabled: true

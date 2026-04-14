@@ -1,0 +1,110 @@
+application:
+  trigram: ETL
+  name: ETL Pipeline
+  tier: analytics
+firewall:
+  policy_set: etl-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ETL_data-lake
+      destination: ETL_etl-workers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9092
+      action: allow
+      priority: 380
+      enabled: true
+    - name: allow-ops
+      source: ETL_dev-vpn
+      destination: ETL_etl-workers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 381
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ETL_etl-workers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 382
+      enabled: true
+    - name: allow-egress-service
+      source: ETL_etl-workers
+      destination: ETL_lakehouse-bus
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 383
+      enabled: true
+    - name: allow-sync
+      source: ETL_integration-bus
+      destination: ETL_etl-workers
+      direction: egress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 384
+      enabled: true
+    - name: allow-trigram-peer
+      source: EVT_event-bus
+      destination: ETL_etl-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 385
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ETL_etl-pipeline
+      destination: EVT_event-bus
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 386
+      enabled: true
+    - name: deny-trigram-peer
+      source: PLT_platform-core
+      destination: ETL_etl-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 387
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ETL_etl-pipeline
+      destination: PLT_platform-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 388
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ETL_etl-workers
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 389
+      enabled: true

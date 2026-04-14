@@ -1,0 +1,110 @@
+application:
+  trigram: CRM
+  name: CRM Platform
+  tier: app
+firewall:
+  policy_set: crm-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CRM_corp-users
+      destination: CRM_crm-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5432
+      action: allow
+      priority: 230
+      enabled: true
+    - name: allow-ops
+      source: CRM_dev-vpn
+      destination: CRM_crm-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 231
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CRM_crm-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 232
+      enabled: true
+    - name: allow-egress-service
+      source: CRM_crm-api
+      destination: CRM_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 233
+      enabled: true
+    - name: allow-sync
+      source: CRM_integration-bus
+      destination: CRM_crm-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 234
+      enabled: true
+    - name: allow-trigram-peer
+      source: CMP_compliance-vault
+      destination: CRM_crm-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 235
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CRM_crm-platform
+      destination: CMP_compliance-vault
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 236
+      enabled: true
+    - name: deny-trigram-peer
+      source: MFA_mfa-service
+      destination: CRM_crm-platform
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 237
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CRM_crm-platform
+      destination: MFA_mfa-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 238
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CRM_crm-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 239
+      enabled: true

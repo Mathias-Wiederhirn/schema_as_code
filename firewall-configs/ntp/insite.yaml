@@ -1,0 +1,109 @@
+application:
+  trigram: NTP
+  name: Time Service
+  tier: core
+firewall:
+  policy_set: ntp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: NTP_all-zones
+      destination: NTP_time-servers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 790
+      enabled: true
+    - name: allow-ops
+      source: NTP_ops-admin
+      destination: NTP_time-servers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 791
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: NTP_time-servers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 792
+      enabled: true
+    - name: allow-egress-service
+      source: NTP_time-servers
+      destination: NTP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 793
+      enabled: true
+    - name: allow-sync
+      source: NTP_integration-bus
+      destination: NTP_time-servers
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 794
+      enabled: true
+    - name: allow-trigram-peer
+      source: NET_network-core
+      destination: NTP_time-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 795
+      enabled: true
+    - name: allow-outbound-trigram
+      source: NTP_time-service
+      destination: NET_network-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 796
+      enabled: true
+    - name: deny-trigram-peer
+      source: DLP_data-loss-prevention
+      destination: NTP_time-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 797
+      enabled: true
+    - name: deny-outbound-trigram
+      source: NTP_time-service
+      destination: DLP_data-loss-prevention
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 798
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: NTP_time-servers
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 799
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: SEM
+  name: SIEM
+  tier: security
+firewall:
+  policy_set: sem-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SEM_all-zones
+      destination: SEM_siem-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 6514
+      action: allow
+      priority: 1060
+      enabled: true
+    - name: allow-ops
+      source: SEM_ops-admin
+      destination: SEM_siem-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1061
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SEM_siem-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 1062
+      enabled: true
+    - name: allow-egress-service
+      source: SEM_siem-core
+      destination: SEM_siem-core
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 1063
+      enabled: true
+    - name: allow-sync
+      source: SEM_integration-bus
+      destination: SEM_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 1064
+      enabled: false
+    - name: allow-trigram-peer
+      source: SHP_shipping-api
+      destination: SEM_siem
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 1065
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SEM_siem
+      destination: SHP_shipping-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 1066
+      enabled: true
+    - name: deny-trigram-peer
+      source: INS_insights-engine
+      destination: SEM_siem
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 1067
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SEM_siem
+      destination: INS_insights-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 1068
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SEM_siem-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 1069
+      enabled: true

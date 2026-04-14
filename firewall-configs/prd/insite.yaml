@@ -1,0 +1,110 @@
+application:
+  trigram: PRD
+  name: Product API
+  tier: commerce
+firewall:
+  policy_set: prd-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: PRD_internet
+      destination: PRD_product-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 900
+      enabled: true
+    - name: allow-ops
+      source: PRD_corp-admin
+      destination: PRD_product-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 901
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: PRD_product-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 902
+      enabled: true
+    - name: allow-egress-service
+      source: PRD_product-api
+      destination: PRD_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 903
+      enabled: true
+    - name: allow-sync
+      source: PRD_order-mesh
+      destination: PRD_product-api
+      direction: egress
+      protocol: udp
+      ports:
+        - 8200
+      action: allow
+      priority: 904
+      enabled: false
+    - name: allow-trigram-peer
+      source: PRX_proxy-fleet
+      destination: PRD_product-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 905
+      enabled: true
+    - name: allow-outbound-trigram
+      source: PRD_product-api
+      destination: PRX_proxy-fleet
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 906
+      enabled: true
+    - name: deny-trigram-peer
+      source: EXP_export-service
+      destination: PRD_product-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 907
+      enabled: true
+    - name: deny-outbound-trigram
+      source: PRD_product-api
+      destination: EXP_export-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 908
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: PRD_product-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 909
+      enabled: true

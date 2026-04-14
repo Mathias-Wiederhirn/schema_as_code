@@ -1,0 +1,110 @@
+application:
+  trigram: BKP
+  name: Backup Control
+  tier: ops
+firewall:
+  policy_set: bkp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: BKP_backup-agents
+      destination: BKP_backup-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8200
+      action: allow
+      priority: 160
+      enabled: true
+    - name: allow-ops
+      source: BKP_ops-admin
+      destination: BKP_backup-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 161
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: BKP_backup-vault
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 162
+      enabled: true
+    - name: allow-egress-service
+      source: BKP_backup-vault
+      destination: BKP_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 163
+      enabled: true
+    - name: allow-sync
+      source: BKP_monitoring-hub
+      destination: BKP_backup-vault
+      direction: egress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 164
+      enabled: true
+    - name: allow-trigram-peer
+      source: BUS_business-portal
+      destination: BKP_backup-control
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 165
+      enabled: true
+    - name: allow-outbound-trigram
+      source: BKP_backup-control
+      destination: BUS_business-portal
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 166
+      enabled: true
+    - name: deny-trigram-peer
+      source: LON_london-hub
+      destination: BKP_backup-control
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 167
+      enabled: true
+    - name: deny-outbound-trigram
+      source: BKP_backup-control
+      destination: LON_london-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 168
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: BKP_backup-vault
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 169
+      enabled: true

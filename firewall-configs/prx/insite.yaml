@@ -1,0 +1,110 @@
+application:
+  trigram: PRX
+  name: Proxy Fleet
+  tier: edge
+firewall:
+  policy_set: prx-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: PRX_internet
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 80
+        - 443
+      action: allow
+      priority: 910
+      enabled: true
+    - name: allow-ops
+      source: PRX_ops-admin
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 911
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 912
+      enabled: true
+    - name: allow-egress-service
+      source: PRX_proxy-fleet
+      destination: PRX_origin-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 913
+      enabled: true
+    - name: allow-sync
+      source: PRX_integration-bus
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 914
+      enabled: true
+    - name: allow-trigram-peer
+      source: PRD_product-api
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 915
+      enabled: true
+    - name: allow-outbound-trigram
+      source: PRX_proxy-fleet
+      destination: PRD_product-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 916
+      enabled: true
+    - name: deny-trigram-peer
+      source: FED_federation-hub
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 917
+      enabled: true
+    - name: deny-outbound-trigram
+      source: PRX_proxy-fleet
+      destination: FED_federation-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 918
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: PRX_proxy-fleet
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 919
+      enabled: true

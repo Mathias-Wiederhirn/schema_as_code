@@ -1,0 +1,110 @@
+application:
+  trigram: EDI
+  name: EDI Gateway
+  tier: integration
+firewall:
+  policy_set: edi-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: EDI_partners
+      destination: EDI_edi-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 22
+      action: allow
+      priority: 340
+      enabled: true
+    - name: allow-ops
+      source: EDI_ops-admin
+      destination: EDI_edi-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 341
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: EDI_edi-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 342
+      enabled: true
+    - name: allow-egress-service
+      source: EDI_edi-gateway
+      destination: EDI_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 343
+      enabled: true
+    - name: allow-sync
+      source: EDI_integration-bus
+      destination: EDI_edi-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 344
+      enabled: false
+    - name: allow-trigram-peer
+      source: ELK_observability-stack
+      destination: EDI_edi-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 345
+      enabled: true
+    - name: allow-outbound-trigram
+      source: EDI_edi-gateway
+      destination: ELK_observability-stack
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 346
+      enabled: true
+    - name: deny-trigram-peer
+      source: PAY_payments
+      destination: EDI_edi-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 347
+      enabled: true
+    - name: deny-outbound-trigram
+      source: EDI_edi-gateway
+      destination: PAY_payments
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 348
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: EDI_edi-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 349
+      enabled: true

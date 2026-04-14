@@ -1,0 +1,110 @@
+application:
+  trigram: MED
+  name: Media Pipeline
+  tier: app
+firewall:
+  policy_set: med-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MED_cdn-edge
+      destination: MED_media-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9000
+      action: allow
+      priority: 700
+      enabled: true
+    - name: allow-ops
+      source: MED_ops-admin
+      destination: MED_media-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 701
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MED_media-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 702
+      enabled: true
+    - name: allow-egress-service
+      source: MED_media-pipeline
+      destination: MED_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 703
+      enabled: true
+    - name: allow-sync
+      source: MED_integration-bus
+      destination: MED_media-pipeline
+      direction: egress
+      protocol: udp
+      ports:
+        - 4317
+      action: allow
+      priority: 704
+      enabled: true
+    - name: allow-trigram-peer
+      source: MES_messaging-core
+      destination: MED_media-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 705
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MED_media-pipeline
+      destination: MES_messaging-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 706
+      enabled: true
+    - name: deny-trigram-peer
+      source: CHT_chat-gateway
+      destination: MED_media-pipeline
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 707
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MED_media-pipeline
+      destination: CHT_chat-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 708
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MED_media-pipeline
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 709
+      enabled: true

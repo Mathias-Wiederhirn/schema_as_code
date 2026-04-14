@@ -1,0 +1,110 @@
+application:
+  trigram: ERP
+  name: ERP Core
+  tier: finance
+firewall:
+  policy_set: erp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: ERP_corp-users
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 1521
+      action: allow
+      priority: 370
+      enabled: true
+    - name: allow-ops
+      source: ERP_ops-admin
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 371
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 372
+      enabled: true
+    - name: allow-egress-service
+      source: ERP_erp-core
+      destination: ERP_audit-ledger
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 373
+      enabled: true
+    - name: allow-sync
+      source: ERP_integration-bus
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 374
+      enabled: true
+    - name: allow-trigram-peer
+      source: EML_mail-relay
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 375
+      enabled: true
+    - name: allow-outbound-trigram
+      source: ERP_erp-core
+      destination: EML_mail-relay
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 376
+      enabled: true
+    - name: deny-trigram-peer
+      source: PKI_pki-services
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 377
+      enabled: true
+    - name: deny-outbound-trigram
+      source: ERP_erp-core
+      destination: PKI_pki-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 378
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: ERP_erp-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 5900/tcp
+      action: deny
+      priority: 379
+      enabled: true

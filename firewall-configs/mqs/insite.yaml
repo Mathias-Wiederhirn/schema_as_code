@@ -1,0 +1,110 @@
+application:
+  trigram: MQS
+  name: Queue Service
+  tier: messaging
+firewall:
+  policy_set: mqs-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MQS_app-tier
+      destination: MQS_queue-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+        - 15672
+      action: allow
+      priority: 760
+      enabled: true
+    - name: allow-ops
+      source: MQS_ops-admin
+      destination: MQS_queue-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 761
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MQS_queue-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 762
+      enabled: true
+    - name: allow-egress-service
+      source: MQS_queue-service
+      destination: MQS_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 53
+      action: allow
+      priority: 763
+      enabled: true
+    - name: allow-sync
+      source: MQS_message-backbone
+      destination: MQS_queue-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8200
+      action: allow
+      priority: 764
+      enabled: true
+    - name: allow-trigram-peer
+      source: NAT_nat-gateway
+      destination: MQS_queue-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 765
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MQS_queue-service
+      destination: NAT_nat-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 766
+      enabled: true
+    - name: deny-trigram-peer
+      source: CUS_customer-hub
+      destination: MQS_queue-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 767
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MQS_queue-service
+      destination: CUS_customer-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 768
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MQS_queue-service
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 769
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: OPS
+  name: Operations Hub
+  tier: ops
+firewall:
+  policy_set: ops-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: OPS_ops-admin
+      destination: OPS_operations-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 22
+      action: allow
+      priority: 820
+      enabled: true
+    - name: allow-ops
+      source: OPS_ops-admin
+      destination: OPS_operations-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 821
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: OPS_operations-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 822
+      enabled: true
+    - name: allow-egress-service
+      source: OPS_operations-hub
+      destination: OPS_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 53
+      action: allow
+      priority: 823
+      enabled: true
+    - name: allow-sync
+      source: OPS_monitoring-hub
+      destination: OPS_operations-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 824
+      enabled: false
+    - name: allow-trigram-peer
+      source: ORC_orchestration
+      destination: OPS_operations-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 825
+      enabled: true
+    - name: allow-outbound-trigram
+      source: OPS_operations-hub
+      destination: ORC_orchestration
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 826
+      enabled: true
+    - name: deny-trigram-peer
+      source: EAI_enterprise-integration
+      destination: OPS_operations-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 827
+      enabled: true
+    - name: deny-outbound-trigram
+      source: OPS_operations-hub
+      destination: EAI_enterprise-integration
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 828
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: OPS_operations-hub
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 829
+      enabled: true

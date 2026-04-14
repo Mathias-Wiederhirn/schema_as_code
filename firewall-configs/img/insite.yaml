@@ -1,0 +1,110 @@
+application:
+  trigram: IMG
+  name: Image Service
+  tier: app
+firewall:
+  policy_set: img-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: IMG_web-tier
+      destination: IMG_image-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9000
+      action: allow
+      priority: 540
+      enabled: true
+    - name: allow-ops
+      source: IMG_corp-admin
+      destination: IMG_image-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 541
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: IMG_image-renderer
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 542
+      enabled: true
+    - name: allow-egress-service
+      source: IMG_image-renderer
+      destination: IMG_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 543
+      enabled: true
+    - name: allow-sync
+      source: IMG_integration-bus
+      destination: IMG_image-renderer
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 544
+      enabled: true
+    - name: allow-trigram-peer
+      source: IMP_import-pipeline
+      destination: IMG_image-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 545
+      enabled: true
+    - name: allow-outbound-trigram
+      source: IMG_image-service
+      destination: IMP_import-pipeline
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 546
+      enabled: true
+    - name: deny-trigram-peer
+      source: SDP_service-desk
+      destination: IMG_image-service
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 547
+      enabled: true
+    - name: deny-outbound-trigram
+      source: IMG_image-service
+      destination: SDP_service-desk
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 548
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: IMG_image-renderer
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 549
+      enabled: true

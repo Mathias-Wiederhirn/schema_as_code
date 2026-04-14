@@ -1,0 +1,110 @@
+application:
+  trigram: OBS
+  name: Observability
+  tier: ops
+firewall:
+  policy_set: obs-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: OBS_app-tier
+      destination: OBS_obs-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 4317
+        - 4318
+      action: allow
+      priority: 800
+      enabled: true
+    - name: allow-ops
+      source: OBS_dev-vpn
+      destination: OBS_obs-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 801
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: OBS_obs-stack
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 802
+      enabled: true
+    - name: allow-egress-service
+      source: OBS_obs-stack
+      destination: OBS_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 803
+      enabled: true
+    - name: allow-sync
+      source: OBS_monitoring-hub
+      destination: OBS_obs-stack
+      direction: egress
+      protocol: udp
+      ports:
+        - 161
+      action: allow
+      priority: 804
+      enabled: true
+    - name: allow-trigram-peer
+      source: OMS_order-service
+      destination: OBS_observability
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 805
+      enabled: true
+    - name: allow-outbound-trigram
+      source: OBS_observability
+      destination: OMS_order-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 806
+      enabled: true
+    - name: deny-trigram-peer
+      source: DNS_dns-resolver
+      destination: OBS_observability
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 807
+      enabled: true
+    - name: deny-outbound-trigram
+      source: OBS_observability
+      destination: DNS_dns-resolver
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 808
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: OBS_obs-stack
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 809
+      enabled: true

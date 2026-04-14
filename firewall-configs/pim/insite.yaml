@@ -1,0 +1,110 @@
+application:
+  trigram: PIM
+  name: Product Info
+  tier: commerce
+firewall:
+  policy_set: pim-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: PIM_corp-users
+      destination: PIM_pim-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5432
+      action: allow
+      priority: 860
+      enabled: true
+    - name: allow-ops
+      source: PIM_dev-vpn
+      destination: PIM_pim-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 861
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: PIM_pim-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 862
+      enabled: true
+    - name: allow-egress-service
+      source: PIM_pim-api
+      destination: PIM_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 863
+      enabled: true
+    - name: allow-sync
+      source: PIM_order-mesh
+      destination: PIM_pim-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 864
+      enabled: true
+    - name: allow-trigram-peer
+      source: PKI_pki-services
+      destination: PIM_product-info
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 865
+      enabled: true
+    - name: allow-outbound-trigram
+      source: PIM_product-info
+      destination: PKI_pki-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 866
+      enabled: true
+    - name: deny-trigram-peer
+      source: EML_mail-relay
+      destination: PIM_product-info
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 867
+      enabled: true
+    - name: deny-outbound-trigram
+      source: PIM_product-info
+      destination: EML_mail-relay
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 868
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: PIM_pim-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 869
+      enabled: true

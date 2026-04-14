@@ -1,0 +1,110 @@
+application:
+  trigram: CSH
+  name: Cash Ledger
+  tier: finance
+firewall:
+  policy_set: csh-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CSH_finance-app
+      destination: CSH_cash-ledger-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 1521
+      action: allow
+      priority: 240
+      enabled: true
+    - name: allow-ops
+      source: CSH_corp-admin
+      destination: CSH_cash-ledger-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 241
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CSH_cash-ledger-db
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 242
+      enabled: true
+    - name: allow-egress-service
+      source: CSH_cash-ledger-db
+      destination: CSH_audit-ledger
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 243
+      enabled: true
+    - name: allow-sync
+      source: CSH_integration-bus
+      destination: CSH_cash-ledger-db
+      direction: egress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 244
+      enabled: true
+    - name: allow-trigram-peer
+      source: CTL_control-plane
+      destination: CSH_cash-ledger
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 245
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CSH_cash-ledger
+      destination: CTL_control-plane
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 246
+      enabled: true
+    - name: deny-trigram-peer
+      source: MLP_ml-platform
+      destination: CSH_cash-ledger
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 247
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CSH_cash-ledger
+      destination: MLP_ml-platform
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 248
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CSH_cash-ledger-db
+      direction: ingress
+      protocol: any
+      ports:
+        - 3389/tcp
+      action: deny
+      priority: 249
+      enabled: true

@@ -1,0 +1,110 @@
+application:
+  trigram: RIS
+  name: Risk Engine
+  tier: security
+firewall:
+  policy_set: ris-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: RIS_payment-tier
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 9443
+      action: allow
+      priority: 990
+      enabled: true
+    - name: allow-ops
+      source: RIS_corp-admin
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 991
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 992
+      enabled: true
+    - name: allow-egress-service
+      source: RIS_risk-engine
+      destination: RIS_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 993
+      enabled: true
+    - name: allow-sync
+      source: RIS_integration-bus
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 994
+      enabled: true
+    - name: allow-trigram-peer
+      source: REP_reporting
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 995
+      enabled: true
+    - name: allow-outbound-trigram
+      source: RIS_risk-engine
+      destination: REP_reporting
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 996
+      enabled: true
+    - name: deny-trigram-peer
+      source: HCM_human-capital
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 997
+      enabled: true
+    - name: deny-outbound-trigram
+      source: RIS_risk-engine
+      destination: HCM_human-capital
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 998
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: RIS_risk-engine
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 999
+      enabled: true

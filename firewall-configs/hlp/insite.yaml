@@ -1,0 +1,109 @@
+application:
+  trigram: HLP
+  name: Helpdesk
+  tier: corp
+firewall:
+  policy_set: hlp-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: HLP_corp-users
+      destination: HLP_helpdesk-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 500
+      enabled: true
+    - name: allow-ops
+      source: HLP_dev-vpn
+      destination: HLP_helpdesk-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 501
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: HLP_helpdesk-web
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+      action: allow
+      priority: 502
+      enabled: true
+    - name: allow-egress-service
+      source: HLP_helpdesk-web
+      destination: HLP_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 503
+      enabled: true
+    - name: allow-sync
+      source: HLP_corp-services
+      destination: HLP_helpdesk-web
+      direction: egress
+      protocol: udp
+      ports:
+        - 5060
+      action: allow
+      priority: 504
+      enabled: false
+    - name: allow-trigram-peer
+      source: HRM_hr-manager
+      destination: HLP_helpdesk
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 505
+      enabled: true
+    - name: allow-outbound-trigram
+      source: HLP_helpdesk
+      destination: HRM_hr-manager
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 506
+      enabled: true
+    - name: deny-trigram-peer
+      source: RPT_report-builder
+      destination: HLP_helpdesk
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 507
+      enabled: true
+    - name: deny-outbound-trigram
+      source: HLP_helpdesk
+      destination: RPT_report-builder
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 508
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: HLP_helpdesk-web
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 509
+      enabled: true

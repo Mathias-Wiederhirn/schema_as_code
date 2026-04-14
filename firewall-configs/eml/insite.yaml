@@ -1,0 +1,109 @@
+application:
+  trigram: EML
+  name: Mail Relay
+  tier: messaging
+firewall:
+  policy_set: eml-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: EML_app-tier
+      destination: EML_smtp-relay
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 360
+      enabled: true
+    - name: allow-ops
+      source: EML_corp-admin
+      destination: EML_smtp-relay
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 361
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: EML_smtp-relay
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 362
+      enabled: true
+    - name: allow-egress-service
+      source: EML_smtp-relay
+      destination: EML_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 363
+      enabled: true
+    - name: allow-sync
+      source: EML_message-backbone
+      destination: EML_smtp-relay
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 364
+      enabled: true
+    - name: allow-trigram-peer
+      source: ERP_erp-core
+      destination: EML_mail-relay
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 365
+      enabled: true
+    - name: allow-outbound-trigram
+      source: EML_mail-relay
+      destination: ERP_erp-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 366
+      enabled: true
+    - name: deny-trigram-peer
+      source: PIM_product-info
+      destination: EML_mail-relay
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 367
+      enabled: true
+    - name: deny-outbound-trigram
+      source: EML_mail-relay
+      destination: PIM_product-info
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 368
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: EML_smtp-relay
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 369
+      enabled: true

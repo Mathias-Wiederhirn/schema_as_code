@@ -1,0 +1,109 @@
+application:
+  trigram: SOC
+  name: SOC Console
+  tier: security
+firewall:
+  policy_set: soc-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: SOC_ops-admin
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 1090
+      enabled: true
+    - name: allow-ops
+      source: SOC_ops-admin
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 1091
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9104
+      action: allow
+      priority: 1092
+      enabled: true
+    - name: allow-egress-service
+      source: SOC_soc-console
+      destination: SOC_siem-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 1093
+      enabled: true
+    - name: allow-sync
+      source: SOC_integration-bus
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 1094
+      enabled: true
+    - name: allow-trigram-peer
+      source: SIG_signing-service
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 1095
+      enabled: true
+    - name: allow-outbound-trigram
+      source: SOC_soc-console
+      destination: SIG_signing-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 9092
+      action: allow
+      priority: 1096
+      enabled: true
+    - name: deny-trigram-peer
+      source: KAF_kafka-cluster
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 1097
+      enabled: true
+    - name: deny-outbound-trigram
+      source: SOC_soc-console
+      destination: KAF_kafka-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 1098
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: SOC_soc-console
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 1099
+      enabled: true

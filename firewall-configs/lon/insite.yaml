@@ -1,0 +1,110 @@
+application:
+  trigram: LON
+  name: London Hub
+  tier: regional
+firewall:
+  policy_set: lon-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: LON_corp-users
+      destination: LON_lon-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 660
+      enabled: true
+    - name: allow-ops
+      source: LON_corp-admin
+      destination: LON_lon-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 661
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: LON_lon-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 662
+      enabled: true
+    - name: allow-egress-service
+      source: LON_lon-hub
+      destination: LON_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 663
+      enabled: true
+    - name: allow-sync
+      source: LON_integration-bus
+      destination: LON_lon-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 161
+      action: allow
+      priority: 664
+      enabled: false
+    - name: allow-trigram-peer
+      source: LST_listing-api
+      destination: LON_london-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 665
+      enabled: true
+    - name: allow-outbound-trigram
+      source: LON_london-hub
+      destination: LST_listing-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 666
+      enabled: true
+    - name: deny-trigram-peer
+      source: BKP_backup-control
+      destination: LON_london-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 667
+      enabled: true
+    - name: deny-outbound-trigram
+      source: LON_london-hub
+      destination: BKP_backup-control
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 668
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: LON_lon-hub
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 669
+      enabled: true

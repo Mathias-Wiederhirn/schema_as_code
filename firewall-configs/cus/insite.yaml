@@ -1,0 +1,110 @@
+application:
+  trigram: CUS
+  name: Customer Hub
+  tier: web
+firewall:
+  policy_set: cus-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: CUS_internet
+      destination: CUS_customer-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 8443
+      action: allow
+      priority: 260
+      enabled: true
+    - name: allow-ops
+      source: CUS_dev-vpn
+      destination: CUS_customer-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 261
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: CUS_customer-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9101
+      action: allow
+      priority: 262
+      enabled: true
+    - name: allow-egress-service
+      source: CUS_customer-hub
+      destination: CUS_shared-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 587
+      action: allow
+      priority: 263
+      enabled: true
+    - name: allow-sync
+      source: CUS_integration-bus
+      destination: CUS_customer-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 264
+      enabled: false
+    - name: allow-trigram-peer
+      source: DAS_data-science
+      destination: CUS_customer-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 265
+      enabled: true
+    - name: allow-outbound-trigram
+      source: CUS_customer-hub
+      destination: DAS_data-science
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 266
+      enabled: true
+    - name: deny-trigram-peer
+      source: MQS_queue-service
+      destination: CUS_customer-hub
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 267
+      enabled: true
+    - name: deny-outbound-trigram
+      source: CUS_customer-hub
+      destination: MQS_queue-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 268
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: CUS_customer-hub
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 269
+      enabled: true

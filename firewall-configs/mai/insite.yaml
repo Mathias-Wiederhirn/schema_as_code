@@ -1,0 +1,110 @@
+application:
+  trigram: MAI
+  name: Mail API
+  tier: messaging
+firewall:
+  policy_set: mai-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MAI_app-tier
+      destination: MAI_mail-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 587
+      action: allow
+      priority: 680
+      enabled: true
+    - name: allow-ops
+      source: MAI_dev-vpn
+      destination: MAI_mail-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 681
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MAI_mail-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 682
+      enabled: true
+    - name: allow-egress-service
+      source: MAI_mail-api
+      destination: MAI_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 683
+      enabled: true
+    - name: allow-sync
+      source: MAI_message-backbone
+      destination: MAI_mail-api
+      direction: egress
+      protocol: tcp
+      ports:
+        - 8443
+      action: allow
+      priority: 684
+      enabled: true
+    - name: allow-trigram-peer
+      source: MDM_master-data
+      destination: MAI_mail-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 685
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MAI_mail-api
+      destination: MDM_master-data
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 686
+      enabled: true
+    - name: deny-trigram-peer
+      source: CAD_card-services
+      destination: MAI_mail-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 687
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MAI_mail-api
+      destination: CAD_card-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 688
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MAI_mail-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 689
+      enabled: true

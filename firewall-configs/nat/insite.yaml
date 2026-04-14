@@ -1,0 +1,110 @@
+application:
+  trigram: NAT
+  name: NAT Gateway
+  tier: network
+firewall:
+  policy_set: nat-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: NAT_private-subnets
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 80
+      action: allow
+      priority: 770
+      enabled: true
+    - name: allow-ops
+      source: NAT_dev-vpn
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 771
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 772
+      enabled: true
+    - name: allow-egress-service
+      source: NAT_nat-gateway
+      destination: NAT_core-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 123
+      action: allow
+      priority: 773
+      enabled: true
+    - name: allow-sync
+      source: NAT_integration-bus
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 4317
+      action: allow
+      priority: 774
+      enabled: true
+    - name: allow-trigram-peer
+      source: MQS_queue-service
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 775
+      enabled: true
+    - name: allow-outbound-trigram
+      source: NAT_nat-gateway
+      destination: MQS_queue-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 776
+      enabled: true
+    - name: deny-trigram-peer
+      source: DAS_data-science
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 777
+      enabled: true
+    - name: deny-outbound-trigram
+      source: NAT_nat-gateway
+      destination: DAS_data-science
+      direction: egress
+      protocol: tcp
+      ports:
+        - 25
+      action: deny
+      priority: 778
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: NAT_nat-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 23/tcp
+      action: deny
+      priority: 779
+      enabled: true

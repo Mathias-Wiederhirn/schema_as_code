@@ -1,0 +1,109 @@
+application:
+  trigram: LST
+  name: Listing API
+  tier: web
+firewall:
+  policy_set: lst-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: LST_internet
+      destination: LST_listing-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 670
+      enabled: true
+    - name: allow-ops
+      source: LST_ops-admin
+      destination: LST_listing-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 671
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: LST_listing-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 672
+      enabled: true
+    - name: allow-egress-service
+      source: LST_listing-api
+      destination: LST_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 514
+      action: allow
+      priority: 673
+      enabled: true
+    - name: allow-sync
+      source: LST_integration-bus
+      destination: LST_listing-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 674
+      enabled: true
+    - name: allow-trigram-peer
+      source: LON_london-hub
+      destination: LST_listing-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 675
+      enabled: true
+    - name: allow-outbound-trigram
+      source: LST_listing-api
+      destination: LON_london-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 676
+      enabled: true
+    - name: deny-trigram-peer
+      source: BUS_business-portal
+      destination: LST_listing-api
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 677
+      enabled: true
+    - name: deny-outbound-trigram
+      source: LST_listing-api
+      destination: BUS_business-portal
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3389
+      action: deny
+      priority: 678
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: LST_listing-api
+      direction: ingress
+      protocol: any
+      ports:
+        - 22/tcp
+      action: deny
+      priority: 679
+      enabled: true

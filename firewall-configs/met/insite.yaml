@@ -1,0 +1,110 @@
+application:
+  trigram: MET
+  name: Metrics Gateway
+  tier: ops
+firewall:
+  policy_set: met-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: MET_monitoring
+      destination: MET_metrics-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9100
+        - 9200
+      action: allow
+      priority: 720
+      enabled: true
+    - name: allow-ops
+      source: MET_corp-admin
+      destination: MET_metrics-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 721
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: MET_metrics-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 722
+      enabled: true
+    - name: allow-egress-service
+      source: MET_metrics-gateway
+      destination: MET_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 723
+      enabled: true
+    - name: allow-sync
+      source: MET_monitoring-hub
+      destination: MET_metrics-gateway
+      direction: egress
+      protocol: tcp
+      ports:
+        - 1521
+      action: allow
+      priority: 724
+      enabled: true
+    - name: allow-trigram-peer
+      source: MFA_mfa-service
+      destination: MET_metrics-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 725
+      enabled: true
+    - name: allow-outbound-trigram
+      source: MET_metrics-gateway
+      destination: MFA_mfa-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 726
+      enabled: true
+    - name: deny-trigram-peer
+      source: CMP_compliance-vault
+      destination: MET_metrics-gateway
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 727
+      enabled: true
+    - name: deny-outbound-trigram
+      source: MET_metrics-gateway
+      destination: CMP_compliance-vault
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 728
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: MET_metrics-gateway
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 729
+      enabled: true

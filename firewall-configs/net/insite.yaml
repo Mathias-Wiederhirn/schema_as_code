@@ -1,0 +1,110 @@
+application:
+  trigram: NET
+  name: Network Core
+  tier: network
+firewall:
+  policy_set: net-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: NET_ops-admin
+      destination: NET_network-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 161
+      action: allow
+      priority: 780
+      enabled: true
+    - name: allow-ops
+      source: NET_corp-admin
+      destination: NET_network-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 781
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: NET_network-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9103
+      action: allow
+      priority: 782
+      enabled: true
+    - name: allow-egress-service
+      source: NET_network-core
+      destination: NET_core-services
+      direction: egress
+      protocol: udp
+      ports:
+        - 443
+      action: allow
+      priority: 783
+      enabled: true
+    - name: allow-sync
+      source: NET_integration-bus
+      destination: NET_network-core
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5060
+      action: allow
+      priority: 784
+      enabled: true
+    - name: allow-trigram-peer
+      source: NTP_time-service
+      destination: NET_network-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 785
+      enabled: true
+    - name: allow-outbound-trigram
+      source: NET_network-core
+      destination: NTP_time-service
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5672
+      action: allow
+      priority: 786
+      enabled: true
+    - name: deny-trigram-peer
+      source: DBA_database-admin
+      destination: NET_network-core
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 787
+      enabled: true
+    - name: deny-outbound-trigram
+      source: NET_network-core
+      destination: DBA_database-admin
+      direction: egress
+      protocol: tcp
+      ports:
+        - 3306
+      action: deny
+      priority: 788
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: NET_network-core
+      direction: ingress
+      protocol: any
+      ports:
+        - 25/tcp
+      action: deny
+      priority: 789
+      enabled: true

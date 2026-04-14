@@ -1,0 +1,110 @@
+application:
+  trigram: EAI
+  name: Enterprise Integration
+  tier: integration
+firewall:
+  policy_set: eai-default
+  default_action: deny
+  rules:
+    - name: allow-primary
+      source: EAI_app-tier
+      destination: EAI_esb-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 443
+        - 5672
+      action: allow
+      priority: 320
+      enabled: true
+    - name: allow-ops
+      source: EAI_dev-vpn
+      destination: EAI_esb-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+        - 443
+      action: allow
+      priority: 321
+      enabled: true
+    - name: allow-observability
+      source: MON_monitoring
+      destination: EAI_esb-cluster
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 9102
+      action: allow
+      priority: 322
+      enabled: true
+    - name: allow-egress-service
+      source: EAI_esb-cluster
+      destination: EAI_shared-services
+      direction: egress
+      protocol: tcp
+      ports:
+        - 587
+      action: allow
+      priority: 323
+      enabled: true
+    - name: allow-sync
+      source: EAI_integration-bus
+      destination: EAI_esb-cluster
+      direction: egress
+      protocol: tcp
+      ports:
+        - 443
+      action: allow
+      priority: 324
+      enabled: true
+    - name: allow-trigram-peer
+      source: ECM_commerce-engine
+      destination: EAI_enterprise-integration
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 325
+      enabled: true
+    - name: allow-outbound-trigram
+      source: EAI_enterprise-integration
+      destination: ECM_commerce-engine
+      direction: egress
+      protocol: tcp
+      ports:
+        - 5432
+      action: allow
+      priority: 326
+      enabled: true
+    - name: deny-trigram-peer
+      source: OPS_operations-hub
+      destination: EAI_enterprise-integration
+      direction: ingress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 327
+      enabled: true
+    - name: deny-outbound-trigram
+      source: EAI_enterprise-integration
+      destination: OPS_operations-hub
+      direction: egress
+      protocol: tcp
+      ports:
+        - 22
+      action: deny
+      priority: 328
+      enabled: true
+    - name: deny-legacy
+      source: ANY_any
+      destination: EAI_esb-cluster
+      direction: ingress
+      protocol: any
+      ports:
+        - 80/tcp
+      action: deny
+      priority: 329
+      enabled: true
