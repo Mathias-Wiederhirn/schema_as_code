@@ -1,0 +1,28 @@
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# PowerShell and shell history artifacts
+*.ps1xml
+
+# Node / frontend cache
+node_modules/
+dist/
+coverage/
+
+# Python cache
+__pycache__/
+*.pyc
