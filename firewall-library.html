@@ -11,21 +11,43 @@
 </head>
 <body>
   <div class="shell">
-    <header class="masthead">
-      <div>
-        <p class="eyebrow">Firewall Library</p>
-        <h1>Firewall Atlas</h1>
-        <p class="lede">A visual map of all trigram application folders, their sources, destinations, and allow or deny rule flows.</p>
+    <header class="topbar">
+      <div class="brand-lockup">
+        <p class="eyebrow">Schema As Code</p>
+        <span class="brand-name">Firewall Atlas</span>
       </div>
-      <div class="hero-stats" id="hero-stats"></div>
+      <nav class="topnav">
+        <a href="#overview">Overview</a>
+        <a href="#atlas">Atlas</a>
+      </nav>
     </header>
 
-    <main class="layout">
+    <section class="hero" id="overview">
+      <div class="hero-copy">
+        <p class="eyebrow">Firewall Configuration Website</p>
+        <h1>Explore network policy as a living system, not a folder of files.</h1>
+        <p class="lede">This site turns trigram-based YAML firewall configuration into an interactive visual atlas. Search an application, inspect its flows, and move across connected policies directly from the topology.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#atlas">Open Atlas</a>
+          <a class="button button-secondary" href="https://github.com/Mathias-Wiederhirn/schema_as_code">View Repository</a>
+        </div>
+      </div>
+      <aside class="hero-panel">
+        <div class="hero-panel-head">
+          <p class="eyebrow">Live Library</p>
+          <h2>Current estate</h2>
+        </div>
+        <div class="hero-stats" id="hero-stats"></div>
+      </aside>
+    </section>
+
+    <main class="layout" id="atlas">
       <section class="card side-card">
         <div class="card-head">
           <div>
             <p class="eyebrow">Explore</p>
             <h2>Applications</h2>
+            <p class="section-copy">Search a trigram or switch policy mode to focus the map on the flows you care about.</p>
           </div>
         </div>
         <div class="controls">
@@ -44,12 +66,17 @@
           <div>
             <p class="eyebrow">Graph</p>
             <h2>Connected Rule Topology</h2>
+            <p class="section-copy">The selected trigram stays centered while connected sources and destinations are grouped around it. Hover for rule details and click a node to jump into that policy.</p>
           </div>
         </div>
         <div id="atlas-graph" class="atlas-graph"></div>
         <div id="graph-tooltip" class="graph-tooltip" hidden></div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <p>Schema As Code firewall website for interactive trigram policy exploration.</p>
+    </footer>
   </div>
 
   <script src="data/firewall-library.js"></script>
