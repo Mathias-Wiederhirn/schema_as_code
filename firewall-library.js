@@ -216,7 +216,7 @@
       const a = positions[edge.from];
       const b = positions[edge.to];
       if (!a || !b) return;
-      const d = `M ${a.x + 126} ${a.y + 26} C ${(a.x + 126 + b.x) / 2} ${a.y + 26}, ${(a.x + 126 + b.x) / 2} ${b.y + 26}, ${b.x} ${b.y + 26}`;
+      const d = `M ${a.x + 126} ${a.y + 33} C ${(a.x + 126 + b.x) / 2} ${a.y + 33}, ${(a.x + 126 + b.x) / 2} ${b.y + 33}, ${b.x} ${b.y + 33}`;
       const hit = document.createElementNS("http://www.w3.org/2000/svg", "path");
       hit.setAttribute("d", d);
       hit.setAttribute("class", "edge-hit");
@@ -245,7 +245,7 @@
       group.style.cursor = "pointer";
       const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
       rect.setAttribute("width", "126");
-      rect.setAttribute("height", "54");
+      rect.setAttribute("height", "66");
       rect.setAttribute("rx", "14");
       rect.setAttribute("ry", "14");
       rect.setAttribute("fill", getNodeFill(node.kind === "app" ? "neutral" : node.action));
@@ -266,15 +266,20 @@
         const secondLine = node.displayName || node.label || "";
         const trigram = document.createElementNS("http://www.w3.org/2000/svg", "text");
         trigram.setAttribute("x", "12");
-        trigram.setAttribute("y", "15");
+        trigram.setAttribute("y", "17");
         trigram.setAttribute("class", "node-label");
         trigram.textContent = shorten(topLine, 10);
         const nameLine = document.createElementNS("http://www.w3.org/2000/svg", "text");
         nameLine.setAttribute("x", "12");
-        nameLine.setAttribute("y", "30");
+        nameLine.setAttribute("y", "33");
         nameLine.setAttribute("class", "node-rule-label");
         nameLine.textContent = shorten(secondLine, 16);
-        group.append(rect, trigram, nameLine);
+        const roleLine = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        roleLine.setAttribute("x", "12");
+        roleLine.setAttribute("y", "49");
+        roleLine.setAttribute("class", "node-sub");
+        roleLine.textContent = node.kind;
+        group.append(rect, trigram, nameLine, roleLine);
       }
       group.addEventListener("mouseenter", () => highlightNodeLinks(node, selectedApp, true));
       group.addEventListener("mouseleave", () => highlightNodeLinks(node, selectedApp, false));
